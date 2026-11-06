@@ -1241,15 +1241,28 @@ a {
      deliberately), so switching straight to solid black right at the
      footer's top edge read as an abrupt cut, not part of the same
      scroll. This keeps showing the scene through for the first 64px
-     (matching the mobile padding below, comfortably inside the
-     desktop one too) and is fully solid black well before the
-     tagline/CTA text begins, so legibility's untouched — just the
-     transition into it that's smoother now. */
+     and is fully solid black well before the tagline/CTA text begins,
+     so legibility's untouched — just the transition into it that's
+     smoother now.
+
+     Desktop only — see the mobile override just below. On mobile
+     #work is solid black above this (see its own comment), so letting
+     this top 64px stay transparent just opened the one remaining gap
+     for the Spline scene to flash through, right where a video tile
+     ends and the footer begins ("a thin strip of colour" at the
+     bottom of a tile). The scene's only supposed to be visible on
+     mobile during that first full-screen hero moment. */
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0, var(--bg) 64px);
   padding: 96px 32px;
   min-height: clamp(420px, 55vh, 640px);
   display: flex;
   align-items: center;
+}
+
+@media (max-width: 680px) {
+  .site-footer {
+    background: var(--bg);
+  }
 }
 
 .footer-inner {
