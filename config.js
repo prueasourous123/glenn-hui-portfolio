@@ -39,7 +39,7 @@ Glenn`,
   photo: "",
 
   // Contact email, shown on the About page
-  email: "hello@example.com",
+  email: "studiosmmt@gmail.com",
 
   // Full link to his Instagram profile
   instagramUrl: "https://www.instagram.com/glennhuii",
