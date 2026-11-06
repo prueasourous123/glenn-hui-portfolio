@@ -231,6 +231,33 @@ const canHoverPreview =
   typeof window.matchMedia === "function" &&
   window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
+// Phones (mobile Safari especially) can only keep a handful of <video>
+// elements actively decoding at once — go past that and the extras don't
+// just fail quietly, they can visibly corrupt (color smearing, stray
+// blocks, stale frames) while they fight over the same hardware decoder.
+// The wider rootMargin below means several tiles can want to play at once
+// while scrolling a single-column mobile grid, so this caps how many
+// previews are *actually* playing at a time — the rest just sit on their
+// static thumbnail until a slot frees up, rather than every in-range tile
+// calling .play() unconditionally.
+const MAX_CONCURRENT_PREVIEWS = 3;
+const activePreviewVideos = [];
+const waitingPreviews = []; // { video, activate } in request order
+
+function releasePreviewSlot(video) {
+  const idx = activePreviewVideos.indexOf(video);
+  if (idx !== -1) activePreviewVideos.splice(idx, 1);
+  while (activePreviewVideos.length < MAX_CONCURRENT_PREVIEWS && waitingPreviews.length) {
+    const next = waitingPreviews.shift();
+    next.activate();
+  }
+}
+
+function dequeuePreview(video) {
+  const idx = waitingPreviews.findIndex((entry) => entry.video === video);
+  if (idx !== -1) waitingPreviews.splice(idx, 1);
+}
+
 function attachPreview(tile, video, start) {
   // The loop window, clamped once we know the clip's real length — a
   // `previewStart` set close to the end of a short clip would otherwise
@@ -270,16 +297,37 @@ function attachPreview(tile, video, start) {
     }
   }
 
+  function activate() {
+    tile.classList.add("preview-active");
+    video.play().catch(() => {
+      // Autoplay can still be blocked in rare cases — the static
+      // thumbnail stays visible underneath either way.
+    });
+  }
+
   function sync() {
-    if (inView || hovering) {
-      tile.classList.add("preview-active");
-      video.play().catch(() => {
-        // Autoplay can still be blocked in rare cases — the static
-        // thumbnail stays visible underneath either way.
-      });
+    const wantsToPlay = inView || hovering;
+    const isActive = activePreviewVideos.indexOf(video) !== -1;
+
+    if (wantsToPlay) {
+      if (isActive) return; // already playing, nothing to do
+      dequeuePreview(video); // drop a stale queue entry before re-requesting
+      if (activePreviewVideos.length < MAX_CONCURRENT_PREVIEWS) {
+        activePreviewVideos.push(video);
+        activate();
+      } else {
+        // At the concurrency cap — wait for a slot rather than piling on
+        // another decoder. Stays on the static thumbnail until then.
+        waitingPreviews.push({ video, activate: () => {
+          activePreviewVideos.push(video);
+          activate();
+        } });
+      }
     } else {
       tile.classList.remove("preview-active");
       video.pause();
+      dequeuePreview(video);
+      if (isActive) releasePreviewSlot(video);
     }
   }
 
@@ -312,7 +360,10 @@ function attachPreview(tile, video, start) {
     // (rather than the old 0.4) just means "fire the moment any part of
     // the tile enters that expanded zone," which is what actually gives
     // it that head start — a higher threshold would just shrink the
-    // effective margin back down.
+    // effective margin back down. This zone is intentionally generous
+    // about *wanting* several tiles to start — MAX_CONCURRENT_PREVIEWS
+    // above is what actually keeps the number of videos decoding at once
+    // safe on a phone, regardless of how many tiles are in this zone.
     const observer = new IntersectionObserver(
       ([entry]) => {
         const wasInView = inView;
