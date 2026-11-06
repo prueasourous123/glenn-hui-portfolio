@@ -291,6 +291,21 @@ function attachPreview(tile, video, start) {
   }
 
   if ("IntersectionObserver" in window) {
+    // rootMargin grows the trigger zone well past the actual viewport
+    // edges (500px above and below) — without this, a tile only started
+    // loading/playing the instant it was 40% visible, which on a phone
+    // (fast flick-scrolling, a fresh fetch for each short clip) read as
+    // a beat of "still just the static thumbnail" every time a new tile
+    // arrived rather than feeling instant. Now playback (and therefore
+    // buffering — these are muted+playsinline, so iOS allows the
+    // programmatic .play() below to start fetching data without
+    // needing an actual tap) kicks off while the tile is still well
+    // below the fold, so by the time it's actually scrolled into view
+    // the clip's usually already loaded and looping. threshold: 0
+    // (rather than the old 0.4) just means "fire the moment any part of
+    // the tile enters that expanded zone," which is what actually gives
+    // it that head start — a higher threshold would just shrink the
+    // effective margin back down.
     const observer = new IntersectionObserver(
       ([entry]) => {
         const wasInView = inView;
@@ -298,7 +313,7 @@ function attachPreview(tile, video, start) {
         if (inView && !wasInView) resetToLoopStart();
         sync();
       },
-      { threshold: 0.4 }
+      { threshold: 0, rootMargin: "500px 0px" }
     );
     observer.observe(tile);
   }

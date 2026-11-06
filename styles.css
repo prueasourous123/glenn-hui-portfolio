@@ -906,7 +906,12 @@ a {
 
 @media (max-width: 480px) {
   .lightbox {
-    padding: 24px 12px;
+    /* Was 24px 12px — that little side padding let the player run
+       almost edge-to-edge on a phone (~95% of the screen width), which
+       read as cramped rather than a considered "framed" moment. More
+       padding on both axes gives it real breathing room and reads as a
+       slightly smaller, more deliberate player instead. */
+    padding: 32px 28px;
   }
 }
 
