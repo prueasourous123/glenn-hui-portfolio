@@ -424,8 +424,15 @@ a {
      whatever's behind it — the hero text/Spline scene — directly above
      the dropdown's own solid panel, which read as a mismatched gap
      rather than one continuous menu. Matches .nav-menu's own
-     background exactly so the two read as a single panel. */
-  .nav:has(.nav-menu.open) {
+     background exactly so the two read as a single panel.
+
+     .menu-open is toggled on .nav by buildMobileMenu() in script.js
+     alongside .nav-menu's own .open class — not written as
+     .nav:has(.nav-menu.open), which would need no JS at all, because
+     that selector silently failed to parse in testing (the whole rule
+     got dropped, not just unmatched) despite CSS.supports() reporting
+     :has() as available. A plain class toggle has no such risk. */
+  .nav.menu-open {
     background: rgba(0, 0, 0, 0.98);
   }
 }

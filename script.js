@@ -31,14 +31,21 @@ function buildMobileMenu() {
   const burger = document.getElementById("nav-burger");
   const menu = document.getElementById("nav-menu");
   if (!burger || !menu) return;
+  // .nav itself (see its CSS) — not just .nav-menu — picks up a
+  // matching solid background while the menu's open, so the
+  // transparent bar up top doesn't show the hero/Spline scene through
+  // it right above the dropdown's own solid panel.
+  const nav = burger.closest(".nav");
 
   function closeMenu() {
     menu.classList.remove("open");
     burger.setAttribute("aria-expanded", "false");
+    if (nav) nav.classList.remove("menu-open");
   }
   function openMenu() {
     menu.classList.add("open");
     burger.setAttribute("aria-expanded", "true");
+    if (nav) nav.classList.add("menu-open");
   }
 
   burger.addEventListener("click", () => {
