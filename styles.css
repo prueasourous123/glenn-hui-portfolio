@@ -417,6 +417,17 @@ a {
   .nav-menu.open {
     display: flex;
   }
+  /* .nav itself (the fixed wrapper around both the bar and this
+     dropdown) stays transparent at rest — that's what lets it float
+     over the hero. But with the menu open, that same transparency left
+     the top ~100px (the bar the hamburger/✕ icon sits in) showing
+     whatever's behind it — the hero text/Spline scene — directly above
+     the dropdown's own solid panel, which read as a mismatched gap
+     rather than one continuous menu. Matches .nav-menu's own
+     background exactly so the two read as a single panel. */
+  .nav:has(.nav-menu.open) {
+    background: rgba(0, 0, 0, 0.98);
+  }
 }
 
 @media (max-width: 480px) {

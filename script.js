@@ -343,7 +343,7 @@ function openLightbox(work) {
     lightbox.id = "lightbox";
     lightbox.className = "lightbox";
     lightbox.innerHTML = `
-      <div class="lightbox-close" id="lightbox-close">CLOSE ✕</div>
+      <div class="lightbox-close" id="lightbox-close" aria-label="Close">✕</div>
       <div class="lightbox-inner">
         <div class="lightbox-frame" id="lightbox-frame"></div>
         <div class="lightbox-caption">
