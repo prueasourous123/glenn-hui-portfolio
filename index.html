@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio</title>
+  <!-- Switzer, via Fontshare — a free Helvetica-Now-style neo-grotesque
+       used site-wide (see --font-display/--font-body in styles.css).
+       Real Helvetica Neue (including the licensed "LT Pro" version) is
+       a paid commercial font with no free tier, so this is the closest
+       free equivalent rather than the real thing. -->
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <!-- Warms up the connection to Instagram ahead of time, since the WORK
+       grid opens Instagram-hosted embeds — shaves a little off the delay
+       the first time someone clicks a Reel. -->
+  <link rel="preconnect" href="https://www.instagram.com" />
+  <!-- Same idea for YouTube — used for the film embeds and thumbnails. -->
+  <link rel="preconnect" href="https://www.youtube-nocookie.com" />
+  <link rel="preconnect" href="https://img.youtube.com" />
+  <link
+    href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700,900&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Experimental — a Spline 3D scene. Used to sit inside its own
+       hero section at the top of the page; now lives as a fixed,
+       full-screen background for the whole page instead (see
+       .spline-bg below and in styles.css), with the real content
+       (WORK grid, contact form, footer) scrolling up over it rather
+       than past it. A second instance of this was also tried behind
+       just the footer and got scrapped — "doing too much" for that
+       spot — this is a different, simpler setup: one scene, pinned
+       behind everything. -->
+  <script type="module" src="https://cdn.spline.design/@splinetool/viewer@2.0.121/build/spline-viewer.js"></script>
+</head>
+<body>
+  <!-- Fixed, full-screen background — stays pinned behind the whole
+       page while everything else (nav, WORK grid, contact form,
+       footer) scrolls up over it, covering it as each section scrolls
+       into place. pointer-events: none so it's purely decorative and
+       never intercepts clicks/scrolling meant for the real content
+       above it (see .spline-bg in styles.css). -->
+  <div class="spline-bg" aria-hidden="true">
+    <spline-viewer></spline-viewer>
+  </div>
+  <!-- Two separate Spline scenes, not one scene reshaped by CSS — a
+       single 3D camera can't frame both a wide desktop window and a
+       narrow phone screen well (whatever looks right landscape always
+       crops or shrinks portrait), so the mobile version has its own
+       camera built specifically for a narrow frame. This picks which
+       one loads before the <spline-viewer> element upgrades, so only
+       one scene is ever actually fetched, never both. A plain
+       (non-module) script, not deferred, so it runs immediately after
+       the element above is parsed and sets its url attribute before
+       the module script below defines the custom element and reads
+       it. Same 680px breakpoint as the rest of the mobile CSS. -->
+  <script>
+    (function () {
+      var isMobile = window.matchMedia("(max-width: 680px)").matches;
+      var url = isMobile
+        ? "https://prod.spline.design/C6MhK1CMAQZhtfrE/scene.splinecode"
+        : "https://prod.spline.design/jRvnEwjRFNCxyFf2/scene.splinecode";
+      document.querySelector(".spline-bg spline-viewer").setAttribute("url", url);
+    })();
+  </script>
+
+  <!-- One-time page-load intro — plays the first time someone lands on
+       the site in a given browser session (see intro.js). Present here
+       by default (not inserted by JS) so it's already covering the
+       page on the very first paint; intro.js decides in its first tick
+       whether to animate it or just remove it. -->
+  <div class="intro-overlay" id="intro-overlay" aria-hidden="true">
+    <div class="intro-word" id="intro-word"></div>
+  </div>
+
+  <!-- No background/border — floats transparently on top of whatever's
+       underneath (the full-screen Spline hero on this page) rather than
+       sitting in its own distinct bar. No name/logo on the left either —
+       "Glenn Hui" already shows up elsewhere (the About page heading,
+       the footer copyright line, the browser tab title), so it felt
+       redundant here. The data-site-name span it used to hold was also
+       what the one-time intro animation (intro.js) flew the typed-out
+       name into — with nowhere to fly to now, intro.js's own built-in
+       fallback just skips the animation and drops the cover instantly,
+       so nothing breaks, it just no longer plays. -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-right">
+        <div class="nav-links">
+          <a href="index.html" class="active" data-work-label>WORK</a>
+          <a href="about.html">ABOUT</a>
+        </div>
+        <a href="#" data-contact-link class="nav-contact">CONTACT</a>
+        <a href="#" data-instagram-link target="_blank" rel="noopener" aria-label="Instagram" class="ig-link">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" />
+            <circle cx="12" cy="12" r="4.6" />
+            <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+          </svg>
+        </a>
+      </div>
+      <!-- Only shown on narrow screens (see styles.css) — opens the
+           .nav-menu panel below with WORK / ABOUT / Instagram, since
+           there isn't room for all of that plus the animated name in
+           the bar itself on a phone. -->
+      <button type="button" class="nav-burger" id="nav-burger" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav-menu" id="nav-menu">
+      <a href="index.html" class="active" data-work-label>WORK</a>
+      <a href="about.html">ABOUT</a>
+      <a href="#" data-contact-link>CONTACT</a>
+      <a href="#" data-instagram-link target="_blank" rel="noopener">INSTAGRAM</a>
+    </div>
+  </nav>
+
+  <main>
+    <!-- EXPERIMENTAL: the Spline scene itself now lives in the fixed
+         .spline-bg layer at the top of <body>, not here — this is just
+         a spacer reserving the same first screen's worth of space the
+         old in-flow hero section used to take up, so the page still
+         opens on a full screen of just the scene before the WORK grid
+         scrolls up over it. The usual text hero (headline/subtext/
+         button, still filled in by script.js's buildHero() from
+         SITE_CONFIG) is commented out below rather than deleted, so
+         this is a quick revert if it doesn't land — buildHero() no-ops
+         gracefully when it can't find [data-hero-headline], so leaving
+         it commented out here doesn't cause any errors. -->
+    <div class="hero-spacer" aria-hidden="true"></div>
+    <!--
+    <section class="hero">
+      <h1 class="hero-headline" data-hero-headline></h1>
+      <p class="hero-subtext" data-hero-subtext></p>
+      <a href="#work" class="hero-button" data-hero-button></a>
+    </section>
+    -->
+
+    <!-- A single, unorganized grid of every piece in works-data.js,
+         built by buildWorkGrid() in script.js — deliberately flat, not
+         split into categories or a highlighted piece, so Glenn can just
+         add a new entry to works-data.js and it shows up with no extra
+         decision to make about where it belongs or how it's framed.
+         id="work" is what the hero's "See the work" button scrolls to. -->
+    <div id="work">
+      <div id="work-sections"></div>
+    </div>
+
+  </main>
+
+  <!-- The contact form that used to live here (Netlify Forms, name/
+       email/content-type/message) was removed — a full form felt like
+       too much friction for how people are actually likely to reach
+       out. The footer below is now the site's one contact moment:
+       tagline + big Email/Instagram buttons, nothing to type into. -->
+  <footer class="site-footer" id="footer">
+    <div class="footer-inner">
+      <!-- Plain static text, no hover/canvas effect — see the
+           .footer-tagline comment in styles.css for why. -->
+      <p class="footer-tagline" data-footer-text></p>
+      <div class="footer-row">
+        <a href="#" data-instagram-link target="_blank" rel="noopener" class="footer-cta">Instagram</a>
+        <a href="#" data-email-link class="footer-cta">Email</a>
+      </div>
+      <div class="footer-copyright" data-copyright></div>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="works-data.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js" defer></script>
+  <script src="opener.js" defer></script>
+  <script src="script.js"></script>
+  <script src="intro.js"></script>
+  <!-- Diagnostic only — see font-audit.js. Does nothing at all unless
+       this page is visited with ?fontaudit in the URL. Safe to ignore,
+       safe to delete once the font question it was built for is
+       settled. -->
+  <script src="font-audit.js"></script>
+</body>
+</html>

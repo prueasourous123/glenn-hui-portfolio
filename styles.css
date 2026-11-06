@@ -1,0 +1,1317 @@
+/* ============================================================
+   Styling only — no content lives in this file.
+   To change text, edit config.js and works-data.js instead.
+   ============================================================ */
+
+:root {
+  /* True black, per Glenn — was a near-black #0a0a0a before. */
+  --bg: #000000;
+  --fg: #f3f3f1;
+  --muted: #8a8a86;
+  /* A softer, slightly dimmer white for the nav links specifically —
+     the full-brightness --fg read as too stark/bright there. */
+  --nav-fg: #d8d8d3;
+  /* The site's brand green, per Glenn: #8be04e. Still split into two
+     variables (one name for "the accent used as a background/decorative
+     fill," one for "the accent used as actual text") purely so existing
+     rules don't all need touching individually if the shade ever needs
+     tuned apart again — right now both point at the exact same hex.
+     Unlike the old dark-forest shade this replaced, #8be04e is bright
+     enough that it clears WCAG AA (12.1:1) as real text on this
+     near-black background on its own, with no white outline or other
+     trick needed to carry the contrast — see the intro overlay and the
+     contact section below for the two places that used to lean on that
+     outline/darkness and needed a second look once the shade got this
+     much brighter. */
+  --accent: #8be04e;
+  --accent-text: #8be04e;
+  /* A bit more breathing room than the original 14px — part of loosening
+     the grid's feel (see .tile's border-radius below) rather than
+     everything butted up edge to edge. */
+  --tile-gap: 48px;
+  /* Taller than a typical nav bar on purpose — it has to hold the
+     animated name (opener.js), which needs real room to be legible. */
+  --nav-height: 136px;
+  /* Switzer (via Fontshare, see the <link> in index.html/about.html) —
+     a free, Helvetica-Now-style neo-grotesque, used for both display
+     and body text now rather than two separate families. Real
+     Helvetica Neue (and the licensed "Pro"/"LT Pro" versions Glenn/
+     Prue were thinking of) is a commercial typeface — Monotype/
+     Linotype sell it from roughly $43 a style, no free tier — so this
+     is the closest free equivalent rather than the real thing. */
+  /* Switzer only now — Helvetica Neue/Helvetica/Arial were there as
+     named stand-ins in case Switzer failed to load, but that meant a
+     real fallback moment would show as a genuinely different
+     typeface, not just a quieter version of the same one. Kept the
+     bare "sans-serif" keyword at the very end — that's not a font of
+     its own, just an instruction for "whatever generic sans the
+     browser/OS has" as an absolute last resort if Switzer truly can't
+     load at all (offline, Fontshare down, etc.), so the page never
+     falls all the way back to the browser's default serif font. */
+  --font-display: "Switzer", sans-serif;
+  --font-body: "Switzer", sans-serif;
+}
+
+/* Visually hidden but still readable by screen readers — used where a
+   real heading needs to exist for accessibility/SEO, but the visible
+   presentation is handled some other way (see .opener below). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Intro overlay ---------- */
+
+/* A one-time, full-screen splash that plays the first time someone
+   lands on the site in a given browser session (see intro.js) — types
+   the name out in the center of the screen in a brighter green, then
+   shrinks/flies it into its resting spot in the nav, fading away to
+   reveal the page (which has already loaded underneath — this is
+   purely a visual cover while that happens, not something the page
+   waits on). Present in the HTML by default (not inserted by JS) so
+   it's already covering the page on the very first paint — intro.js
+   decides in its first tick whether to animate it or just remove it,
+   so a repeat visit this session never shows so much as a flash of it.
+   Sits above everything (including the sticky nav) while it's up. */
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.intro-word {
+  display: flex;
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  font-size: clamp(40px, 9vw, 110px);
+  /* The site's brand green (--accent, #8be04e), with a white outline
+     around it for a "bubble letters" look. Before the brand green
+     changed to this brighter shade, the fill alone was nearly invisible
+     here and the white stroke was doing all the actual legibility work
+     — now the fill is bright enough to read on its own, so the stroke
+     is purely the decorative bubble-letter effect rather than a
+     legibility requirement. Both the fill and the stroke fade away as
+     it flies into the nav (see intro.js), landing as flat --accent with
+     no outline at all — same as the plain static nav text underneath.
+     em-based stroke width so it stays proportional across the clamp()
+     range above. */
+  color: #8be04e;
+  -webkit-text-stroke-width: 0.045em;
+  -webkit-text-stroke-color: #ffffff;
+}
+
+.intro-word span {
+  display: inline-block;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Always reserves room for a vertical scrollbar, whether or not the
+     current page actually needs one. Without this, a short page (About,
+     mainly — see the body comment below) sits a few pixels wider than a
+     tall one (WORK's grid, which almost always scrolls) on any browser
+     where the scrollbar actually takes up width (most of Windows; some
+     Mac setups). Since the nav is centered within a max-width column at
+     wide viewports, that width difference shifted the whole nav — logo
+     included — sideways by a few pixels between the two pages. */
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  /* Pins the footer to the bottom of the screen on a short page (the
+     About page, mainly) instead of it trailing right under the
+     content with empty space below it — body fills at least the full
+     viewport height, and <main> below is set to grow and soak up any
+     leftover space, pushing the footer down to the very bottom. On a
+     tall page (the WORK grid) <main> is already taller than the
+     viewport on its own, so this has no effect there. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1 0 auto;
+  /* Needs its own position + z-index to paint above .spline-bg's
+     fixed layer — without this it's a plain static element and would
+     otherwise sit behind it regardless of DOM order (see .spline-bg's
+     comment). Harmless on pages (About) that don't use .spline-bg at
+     all — there's nothing underneath for this to matter against. */
+  position: relative;
+  z-index: 1;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------- Nav ---------- */
+
+/* Fixed, not sticky — sticky would still occupy its own height in
+   normal document flow (pushing whatever's below it, the hero on this
+   page, down by --nav-height), where the whole point here is for the
+   hero to be a true 100vh and the nav to float transparently on top of
+   it instead. No background/blur/border either, for the same reason —
+   it's meant to read as part of the hero, not a separate bar sitting
+   above it. Still visible while scrolled past the hero into the grid/
+   contact/etc. below, same as the old sticky behavior did. */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+}
+
+/* Its content still lines up with the same 1600px column as the hero
+   and grid below it, instead of stretching edge to edge on wide
+   screens. */
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1600px;
+  margin: 0 auto;
+  height: var(--nav-height);
+  padding: 0 32px;
+}
+
+.nav-links {
+  display: flex;
+  /* A bit more room between WORK and ABOUT than before — part of
+     reading as calmer/cleaner (see the letter-spacing note below). */
+  gap: 32px;
+  /* Was inheriting the body font (Inter) — a very common "default AI
+     tool" look. Archivo is already the display font used for titles/
+     headings elsewhere on the site, so using it here too makes these
+     small nav labels feel like part of the same designed site rather
+     than an untouched UI default. A little letter-spacing now too —
+     tight/normal tracking was reading as cramped next to a reference
+     Prue liked the airier feel of; this opens the labels up without
+     going as far as a full tracked-caps treatment. */
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  /* No flex-grow — nested inside .nav-right now, alongside CONTACT and
+     the Instagram icon (see index.html/about.html), rather than a
+     standalone column of its own spanning a third of the bar. */
+  flex: 0 0 auto;
+}
+
+.nav-links a {
+  position: relative;
+  color: var(--nav-fg);
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  /* Rests collapsed toward the right, so a hover-out wipes the line
+     away to the right instead of just snapping off. */
+  transform-origin: right;
+  transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  opacity: 1;
+}
+
+/* The underline is reserved for the active page only — it always means
+   "you are here." Hovering the other link just brightens it (the rule
+   above); it no longer draws its own underline, so you can never end up
+   with two different-colored underlines on screen at the same time. */
+.nav-links a.active::after {
+  transform-origin: left;
+  transform: scaleX(1);
+  background: var(--accent);
+}
+
+.nav-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 24px;
+}
+
+/* Balances WORK/ABOUT on the left — without it, the right side was
+   carrying only the small Instagram icon, which left the bar reading
+   lopsided (two labelled links on one side, one lone icon on the
+   other) and left a contact point for Glenn's work missing from the
+   nav entirely, buried in the About page and footer instead. Same
+   type treatment as .nav-links a, just without that one's
+   active-page underline — this isn't a page, it's an action. */
+.nav-contact {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--nav-fg);
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.nav-contact:hover {
+  opacity: 1;
+}
+
+.ig-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.75;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.ig-link:hover {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+/* Hamburger button — hidden on desktop/tablet, where WORK/ABOUT and the
+   Instagram icon sit directly in the bar. Only ever shown below the
+   680px breakpoint (see below). */
+.nav-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 5px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  flex: 0 0 auto;
+  /* Was naturally pushed to the right by .nav-logo's flex: 1 sitting
+     before it (see the 680px block below) — now that .nav-logo is gone
+     entirely, it's the only visible item left in .nav-inner on mobile,
+     and a lone flex item under justify-content: space-between sits at
+     the start (left) by default. This pulls it back to the right. */
+  margin-left: auto;
+}
+
+.nav-burger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--nav-fg);
+  border-radius: 1px;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.nav-burger[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.nav-burger[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+
+.nav-burger[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* The dropdown panel the hamburger opens — WORK / ABOUT / Instagram,
+   stacked. Hidden outright on desktop/tablet regardless of its "open"
+   state (the override that actually shows it only exists inside the
+   680px media query below), so there's no way for it to show up on a
+   wide screen even if something leaves the "open" class on it. */
+.nav-menu {
+  display: none;
+  flex-direction: column;
+  padding: 4px 14px 18px;
+  background: rgba(0, 0, 0, 0.98);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-menu a {
+  padding: 14px 4px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--nav-fg);
+  opacity: 0.85;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.nav-menu a.active {
+  opacity: 1;
+  /* Text-safe accent — this is real small text (13px), needs the full
+     4.5:1, not the 2:1 the true dark shade gets here. */
+  color: var(--accent-text);
+}
+
+.nav-menu a:last-child {
+  border-bottom: 0;
+}
+
+/* Below this width, WORK/ABOUT and the Instagram icon move off the
+   bar itself and into the .nav-menu dropdown, opened by .nav-burger —
+   leaving just the hamburger itself visible in the bar (see
+   .nav-burger's margin-left: auto above for how it stays pinned to the
+   right now that there's nothing else in the bar to push it there). */
+@media (max-width: 680px) {
+  .nav-links,
+  .nav-right {
+    display: none;
+  }
+  .nav-burger {
+    display: flex;
+  }
+  .nav-menu.open {
+    display: flex;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --nav-height: 100px;
+  }
+  .nav-inner {
+    padding: 0 14px;
+  }
+}
+
+/* ---------- Hero ---------- */
+
+/* The one deliberate "moment" at the top of the homepage — a short
+   eyebrow label, a big confident headline, a line of context, and a
+   button that just scrolls down to the work below. Replaced an earlier
+   media-driven hero banner (tried, and set aside — two different
+   image-led versions both ended up feeling like they were straining
+   for drama the work itself doesn't need) and, before that, a single
+   plain heading with no supporting copy at all. Same column/gutter as
+   the nav and the sections below it. */
+.hero {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 64px 32px 48px;
+}
+
+/* EXPERIMENTAL — see the matching comment in index.html. The Spline
+   scene now lives in .spline-bg (below), fixed behind the whole page,
+   not inside its own hero section — this is just a transparent spacer
+   reserving the same first screen's worth of scroll space the old
+   in-flow hero used to occupy, so the page still opens on a full
+   screen of just the scene before the WORK grid scrolls up and covers
+   it. Deliberately has no background of its own — staying transparent
+   here is what lets the fixed scene show through for that first
+   screen. */
+.hero-spacer {
+  height: 100vh;
+  min-height: 480px;
+}
+
+/* Fixed behind the whole page (position: fixed, inset: 0) rather than
+   sitting in normal document flow — it doesn't scroll away, the real
+   content (WORK grid, contact form, footer, all given their own
+   opaque backgrounds and promoted above this with z-index) scrolls up
+   over it instead, covering more of it the further down the page you
+   go. z-index: 0 is deliberate, not an oversight — everything else
+   that needs to sit above it (.nav, main, .site-footer) sets its own
+   z-index of at least 1; a plain static element would otherwise paint
+   behind this despite coming later in the DOM, the same stacking
+   gotcha that came up when a Spline scene briefly sat behind the
+   footer only (since reverted — see the footer comments below).
+   pointer-events: none keeps it purely decorative so it never
+   intercepts scrolling or clicks meant for the real content above
+   it. */
+.spline-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* Needed for the mobile override below — centers the viewer once it
+     stops being a flat 100%/100% fill on narrow screens. No effect at
+     wider sizes, where the viewer still fills the whole box exactly
+     as before. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.spline-bg spline-viewer {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* No more mobile-specific sizing hacks here. Three rounds of CSS-only
+   guesses (squeezing the box into 16:9, widening it past the
+   viewport, a gentler aspect-ratio) never reliably fixed the mobile
+   cropping, because the real problem wasn't the CSS box at all — it
+   was one camera trying to frame both a wide desktop window and a
+   narrow phone screen, which no single camera does well. The actual
+   fix was building a second Spline scene with its own camera set up
+   specifically for a narrow portrait frame (see the url-switching
+   script in index.html, right after .spline-bg). With the camera
+   doing the framing work, the viewer just needs to fill its box at
+   every screen size — the plain .spline-bg spline-viewer rule above
+   already does that, nothing extra needed under 680px. */
+
+.hero-headline {
+  font-family: var(--font-display);
+  font-weight: 900;
+  line-height: 1.02;
+  font-size: clamp(36px, 7vw, 92px);
+  color: var(--fg);
+  margin: 0;
+}
+
+.hero-subtext {
+  margin: 24px 0 0;
+  max-width: 560px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.hero-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 32px;
+  padding: 14px 26px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--fg);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.hero-button:hover {
+  border-color: var(--accent-text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+@media (min-width: 720px) {
+  .hero {
+    padding: 88px 32px 64px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 48px 20px 36px;
+  }
+  .hero-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ---------- Work grid ---------- */
+
+/* A single, unorganized grid of every piece — deliberately flat, not
+   split into categories or a highlighted piece, so Glenn can add a new
+   block to works-data.js whenever he likes without having to decide
+   which group it belongs in or whether it deserves special billing. */
+/* Deliberately NOT given a background of its own — #work used to be
+   opaque so it would fully cover the fixed .spline-bg scene as it
+   scrolled up over it, but that was exactly backwards from what was
+   actually wanted: the scene should show through the empty gaps
+   between tiles, not get blocked by this section. Each .tile still
+   paints its own opaque poster/video, so only the gaps (and the
+   extra breathing room below) reveal the scene behind.
+
+   That's desktop only — see the mobile override just below, which
+   goes back to an opaque #work on narrow screens. Single-column,
+   full-width tiles stacked on a phone have much bigger, more frequent
+   gaps than the multi-column desktop grid, so the scene kept
+   flickering in and out between every tile on the way down the page
+   ("a bit too busy on mobile"). This makes #work solid black instead:
+   the scene still gets its moment for that first full screen (via the
+   transparent .hero-spacer above it), the first tile scrolls up over
+   it exactly as before, but everything from there down — gaps
+   included — sits on a flat black backdrop rather than the scene
+   continuing to show through. No extra position/z-index needed here;
+   #work already paints inside <main>'s stacking context (see main's
+   comment above), which is already promoted above .spline-bg. */
+@media (max-width: 680px) {
+  #work {
+    background: #000;
+  }
+}
+
+.work-section-grid {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-flow: dense;
+  /* Real, substantial room between tiles — not a positional trick,
+     actual layout space, which also means a taller page overall
+     ("space out the videos more... like a genuine further down the
+     page"). */
+  gap: var(--tile-gap);
+  padding: 8px 32px 64px;
+}
+
+@media (min-width: 720px) {
+  .work-section-grid {
+    gap: 56px;
+    padding: 8px 32px 72px;
+  }
+}
+
+@media (min-width: 1240px) {
+  .work-section-grid {
+    gap: 72px;
+    padding: 8px 32px 80px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .work-section-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .work-section-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 8px 16px 48px;
+  }
+}
+
+.tile {
+  position: relative;
+  grid-column: span 1;
+  aspect-ratio: 9 / 16;
+  /* Back to sharp corners — the rounded version didn't land. The looser
+     --tile-gap above (from the same round) stays; just the corners
+     reverted. */
+  border-radius: 0;
+  overflow: hidden;
+  cursor: pointer;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: opacity 0.26s ease, transform 0.26s ease;
+  /* Lets .tile-title below size itself off the tile's own rendered
+     width (container query units) rather than one fixed font-size for
+     every tile, so a wide landscape tile's title can sit bigger the
+     way a title card would, while a small portrait tile in a dense
+     stretch of the grid doesn't get text too big for its own box. */
+  container-type: inline-size;
+}
+
+.tile[data-orientation="landscape"] {
+  grid-column: span 2;
+  aspect-ratio: 16 / 9;
+}
+
+/* The tile is now a keyboard-focusable control (tabbing to it reveals
+   the label, same as hovering — see .tile-info), so it needs its own
+   visible focus state rather than relying on the browser default. */
+.tile:focus-visible {
+  /* Text-safe accent, not the true dark one — a focus ring is a real
+     accessibility signal for keyboard users, so it needs to actually
+     be visible (3:1+), same reasoning as the text uses above. */
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .tile,
+  .tile[data-orientation="landscape"] {
+    grid-column: span 1;
+  }
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tile-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: contrast(1.08) saturate(1.08);
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tile:hover .tile-img {
+  transform: scale(1.06);
+}
+
+/* A short muted loop of the actual clip (see script.js's attachAutoPreview
+   + PREVIEW_LOOP_SECONDS), playing only while you're actually hovering
+   the tile (mouse/trackpad) — the grid otherwise stays still, including
+   on touch devices, which have no hover to trigger it. Sits on top of the
+   poster image and crossfades in once script.js adds .preview-active, so
+   there's no flash of a black/loading frame while the clip buffers.
+   Self-hosted clips only — a Vimeo/YouTube/Instagram piece just keeps
+   showing its static thumbnail. */
+.tile-preview-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.tile.preview-active .tile-preview-video {
+  opacity: 1;
+}
+
+.tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* Tall/dark enough at the bottom to keep the label legible once it
+     shows up on hover. */
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.82) 0%,
+    rgba(0, 0, 0, 0.05) 55%,
+    rgba(0, 0, 0, 0.15) 100%
+  );
+  /* Faint at rest — with the label hidden by default (see .tile-info),
+     there's nothing down there that needs protecting, so the grid at
+     rest is just the footage itself, not every tile wearing a dark
+     band across the bottom. Strengthens to the full gradient only once
+     a tile is actually being considered, same moment as the label. */
+  opacity: 0.15;
+  transition: opacity 0.25s ease;
+  z-index: 1;
+}
+
+.tile:hover::after,
+.tile:focus-within::after {
+  opacity: 1;
+}
+
+.tile-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Scales with tile width like the label does, same tightened range —
+     now that the title itself isn't blowing up on a wide tile, the
+     padding around it shouldn't either. */
+  padding: clamp(14px, 1.8cqi, 18px);
+  z-index: 2;
+  /* Hidden at rest — the grid should read as a clean wall of footage,
+     not a wall of captions. The label only shows up once you're
+     actually considering a piece (hovering, or tabbed to it on a
+     keyboard), same moment the play icon and scrim already appear. */
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tile:hover .tile-info,
+.tile:focus-within .tile-info {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tile-label {
+  /* One line, one element — title and category together (e.g. "Chloe
+     Chan · Athlete Profile") instead of a stacked title + a separate
+     meta caption underneath. Reuses the site's existing middle-dot
+     separator rather than introducing a dash. */
+  font-family: var(--font-display);
+  /* Scales gently with the tile's own rendered width (container query
+     units, see .tile's container-type above), but capped tight — a
+     wider landscape tile first got noticeably bigger text here, which
+     read as too big (and fought with titles already burned into a
+     cover image, like 加油's). Kept to a narrow range instead: every
+     tile reads close to the same restrained size, with only a little
+     real scaling room between the smallest and largest tiles. */
+  font-size: clamp(14px, 2.4cqi, 18px);
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+/* .tile-title and .tile-category used to double as the grid tile's own
+   caption too; the grid now uses .tile-label instead (see above) and
+   these two are only reached by the lightbox caption (openLightbox in
+   script.js), but kept under their original names since that's what
+   the lightbox markup still uses. */
+.tile-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.08;
+}
+
+.tile-category {
+  margin-top: 6px;
+  /* The one place this label color isn't --muted grey — recoloring it
+     to the site's accent ties it back to the same color used for the
+     active nav tab. Text-safe accent — small text (12px), needs the
+     full 4.5:1. */
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent-text);
+}
+
+.tile-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transform: translate(-50%, -50%) scale(0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tile:hover .tile-play {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.tile-play svg {
+  margin-left: 2px;
+}
+
+.empty-note {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ---------- Lightbox ---------- */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  /* If the player + caption end up taller than the screen (a landscape
+     film's caption on a short phone screen, the Instagram embed's fixed
+     min-height on a phone held sideways), let this scroll instead of
+     silently cutting content off with no way to reach it — flexbox
+     doesn't clip overflowing content on its own, it just lets it spill
+     past the edges, which without this would be unreachable since the
+     page itself can't scroll behind a position:fixed layer. */
+  overflow-y: auto;
+  /* Kept in the flow (not display:none) so opacity/transform can
+     transition — display can't be animated, which made opening feel
+     like a hard cut rather than a smooth reveal. */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+@media (max-width: 480px) {
+  .lightbox {
+    padding: 24px 12px;
+  }
+}
+
+.lightbox.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.lightbox-inner {
+  width: 100%;
+  max-width: 420px;
+  transform: scale(0.97);
+  transition: transform 0.22s ease;
+}
+
+.lightbox.open .lightbox-inner {
+  transform: scale(1);
+}
+
+/* Instagram's widget can render considerably wider than our 9:16 Vimeo/
+   YouTube frame — give it more room instead of squashing it into the
+   420px column, so the player isn't tiny on click. */
+.lightbox-inner.ig-embed {
+  max-width: 540px;
+}
+
+/* Landscape pieces (films, and the wider HKCR shorts) get a 16:9 frame
+   and a much wider column — the default 420px/9:16 box was built for
+   portrait Reels and would otherwise letterbox these down tiny. */
+.lightbox-inner.landscape {
+  max-width: 960px;
+}
+
+.lightbox-inner.landscape .lightbox-frame {
+  aspect-ratio: 16 / 9;
+}
+
+.lightbox-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  background: #111;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Instagram's own widget controls its own size/branding — let it be
+   instead of forcing it into our 9:16 crop. Keep a min-height so there's
+   a stable box (for the loading spinner to center in) before Instagram's
+   script has finished sizing its iframe. */
+.lightbox-inner.ig-embed .lightbox-frame {
+  aspect-ratio: auto;
+  min-height: 480px;
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  /* Instagram's widget still sizes itself responsively above this —
+     just a shorter floor so it doesn't force extra scrolling on a
+     small phone screen before the real embed has even loaded in. */
+  .lightbox-inner.ig-embed .lightbox-frame {
+    min-height: 320px;
+  }
+}
+
+.lightbox-frame iframe,
+.lightbox-frame video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: contain;
+  background: #000;
+}
+
+/* Instagram's widget replaces the <blockquote> with its own iframe and
+   sets that iframe's size itself via inline styles once it loads. Our
+   generic absolute+100% rule above fights that: the parent has no fixed
+   height in the .ig-embed case (see above), so an absolutely-positioned
+   iframe at height:100% collapses to 0px and the embed looks blank.
+   Let Instagram's iframe size itself instead. */
+.lightbox-inner.ig-embed .lightbox-frame iframe {
+  position: static;
+  /* Let Instagram pick its own width (it sizes responsively up to ~658px)
+     instead of forcing it to exactly fill our column — that was capping
+     it smaller than it wanted to render. */
+  width: auto !important;
+  max-width: 100%;
+  height: auto !important;
+  min-height: 480px;
+}
+
+@media (max-width: 480px) {
+  .lightbox-inner.ig-embed .lightbox-frame iframe {
+    min-height: 320px;
+  }
+}
+
+/* Shown over the frame the instant it opens, while Instagram's widget
+   is still fetching in the background — gives immediate feedback
+   instead of a few seconds of apparent nothing happening. Removed by
+   script.js once the real iframe shows up. */
+.ig-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-top-color: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.lightbox-caption {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.lightbox-caption .tile-title {
+  /* Fixed size here rather than the grid tiles' container-query one —
+     this caption always sits in the same lightbox frame, not a tile of
+     varying width, so one considered size is enough. Same weight bump
+     as the grid titles for consistency. */
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  /* Same tracked-label treatment as the nav links, footer links, and
+     tile category text (Archivo, 600) — this was left on the body
+     font (the body font) by mistake, which made it stand out as a
+     different typeface right next to the Archivo caption beside it. */
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.7;
+  cursor: pointer;
+  z-index: 101;
+}
+
+.lightbox-close:hover {
+  opacity: 1;
+}
+
+.lightbox-empty {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 40px 20px;
+  line-height: 1.6;
+}
+
+/* ---------- About page ---------- */
+
+.about-wrap {
+  /* Wider than the old single-column version (640px) to leave real room
+     for the photo box beside the text rather than squeezing both into
+     the old reading-width column. */
+  max-width: 900px;
+  margin: 0 auto;
+  /* The nav is position: fixed now (see .nav above), so it no longer
+     pushes this page's content down on its own — without accounting
+     for that, the floating transparent nav would sit on top of the
+     first couple of lines of text. Adding --nav-height back into the
+     top padding here keeps the same visual gap below the nav that the
+     90px value gave back when the nav was still in normal flow. */
+  padding: calc(var(--nav-height) + 90px) 24px 100px;
+}
+
+.about-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 56px;
+}
+
+.about-text {
+  flex: 1 1 auto;
+  /* Keeps the text at roughly its old reading width even though the
+     wrap around it got wider — the extra room goes to the photo box,
+     not to longer line lengths. */
+  max-width: 480px;
+}
+
+.about-photo-box {
+  flex: 0 0 240px;
+  width: 240px;
+  height: 240px;
+  border-radius: 10px;
+  overflow: hidden;
+  /* The grey placeholder look, before a real photo's set — a visible
+     box (not just empty space), so it reads as "a photo goes here"
+     rather than a layout gap. */
+  background: #202020;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Black and white, kept as a filter (not baked into the file) so the
+     original color photo is still the source — easy to drop this one
+     line later if a color photo is wanted instead. */
+  filter: grayscale(1);
+}
+
+.about-photo-placeholder {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 20px;
+  line-height: 1.5;
+}
+
+@media (max-width: 680px) {
+  .about-main {
+    /* Text stays first in reading order either way — this just lets the
+       photo box drop below it instead of squeezing beside it once
+       there's no real room for two columns. */
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .about-photo-box {
+    width: 180px;
+    height: 180px;
+    flex-basis: auto;
+  }
+}
+
+/* The role line, bio, and contact links below all share one plain
+   typeface (the body font) and one color (var(--fg), the same default
+   white as the rest of the site, inherited rather than restated) — no
+   green, no switching between elements there. The heading's back on
+   the site's display font (same family as the nav/grid headings), the
+   one deliberate exception, so "Glenn Hui" still reads as a heading
+   rather than just a bigger line of body text — still natural case
+   and a calmer weight than the nav wordmark, not the shouty version
+   from before. */
+.about-heading {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4.2vw, 36px);
+  /* 700, not the heavier 900 used in the nav/grid — enough to read as
+     a proper heading without tipping back into the poster-sized
+     treatment this page moved away from. */
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.about-bio {
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 30px;
+  /* bio in config.js is set via textContent (so it can't carry real
+     HTML), but it's written with an actual line break before the
+     sign-off — this is what makes that line break actually render
+     instead of just collapsing into a space. */
+  white-space: pre-line;
+}
+
+.about-meta {
+  font-size: 13px;
+  line-height: 2;
+}
+
+/* The role line ("Videographer, behind the lens of...") shares the
+   .about-meta class above with the email/Instagram line below it, but
+   needed its own font-size here to actually match the bio paragraph
+   above it (.about-bio, 15px). Scoped to the id, not .about-meta
+   itself, so the contact links keep their own smaller 13px. */
+#about-role {
+  font-size: 15px;
+}
+
+.about-meta a {
+  /* The underline is the only thing marking these out as links now —
+     same font and color as the rest of the page, just like the plain
+     .about-meta text above it (the role line, same class, no link). */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  transition: border-color 0.2s ease;
+}
+
+.about-meta a:hover {
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---------- Footer ---------- */
+
+/* This is the site's one contact moment now — the separate form
+   section got removed as too much friction for how people are
+   actually likely to reach out (an Instagram DM or a quick email, not
+   filling in a name/email/content-type/message form). So the footer
+   is bigger and reads as a real call-to-action: a sizeable headline
+   plus two clear buttons, not just a quiet sign-off line. */
+.site-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  /* position + z-index, same reasoning as main above — without these
+     the footer is a plain static element and the fixed .spline-bg
+     scene would paint over it on the page that uses .spline-bg.
+     Harmless on About, which doesn't. */
+  position: relative;
+  z-index: 1;
+  /* A fade instead of a flat fill — #work above has no background of
+     its own (the scene shows through its gaps all the way down,
+     deliberately), so switching straight to solid black right at the
+     footer's top edge read as an abrupt cut, not part of the same
+     scroll. This keeps showing the scene through for the first 64px
+     (matching the mobile padding below, comfortably inside the
+     desktop one too) and is fully solid black well before the
+     tagline/CTA text begins, so legibility's untouched — just the
+     transition into it that's smoother now. */
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0, var(--bg) 64px);
+  padding: 96px 32px;
+  min-height: clamp(420px, 55vh, 640px);
+  display: flex;
+  align-items: center;
+}
+
+.footer-inner {
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Plain, static text — the Spline scene that briefly sat behind the
+   footer (and the animated letter-wash effect before that, see
+   opener.js) both got scrapped as "too much" for this spot. No hover
+   effect, no canvas, nothing to load — just the line from
+   SITE_CONFIG.footerText. Sized as a real headline now that this is
+   the site's main CTA, not a quiet sign-off line any more.
+   Switzer stands in for the Helvetica Neue (LT Pro) Prue originally
+   wanted (see --font-display's note up in :root) — real Helvetica
+   Neue Bold reads noticeably tighter/denser than Switzer's own
+   default spacing, so the negative letter-spacing here is pulling the
+   two a little closer together rather than leaving Switzer at its
+   own, looser default. */
+.footer-tagline {
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--accent-text);
+  letter-spacing: -0.02em;
+  font-size: clamp(32px, 6vw, 72px);
+  line-height: 1.05;
+  margin: 0 0 40px;
+}
+
+.footer-row {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 28px;
+}
+
+/* Tried as bordered-box buttons first — felt too boxy/formal for the
+   site, so back to plain text links, just a clear step up in size
+   from the old quiet sign-off version, with the same underline-swipe
+   hover treatment used elsewhere on the site (see .nav-links a.active
+   above) so it still reads as a deliberate, inviting call to action
+   rather than needing a box around it to say so. */
+.footer-cta {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: clamp(16px, 2vw, 20px);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--fg);
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.footer-cta::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.footer-cta:hover {
+  opacity: 1;
+}
+
+.footer-cta:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.footer-copyright {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+@media (max-width: 480px) {
+  .site-footer {
+    padding: 64px 16px;
+    /* The vh-based min-height above reads fine on desktop but gets
+       disproportionate on a short phone screen, so phones get a
+       smaller fixed floor instead. */
+    min-height: 0;
+  }
+  .footer-tagline {
+    margin-bottom: 28px;
+  }
+  .footer-row {
+    flex-direction: column;
+    width: 100%;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+}

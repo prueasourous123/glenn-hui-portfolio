@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About</title>
+  <!-- Switzer, via Fontshare — a free Helvetica-Now-style neo-grotesque
+       used site-wide (see --font-display/--font-body in styles.css).
+       Real Helvetica Neue (including the licensed "LT Pro" version) is
+       a paid commercial font with no free tier, so this is the closest
+       free equivalent rather than the real thing. -->
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link
+    href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700,900&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- One-time page-load intro — plays the first time someone lands on
+       the site in a given browser session (see intro.js). Present here
+       by default (not inserted by JS) so it's already covering the
+       page on the very first paint; intro.js decides in its first tick
+       whether to animate it or just remove it. -->
+  <div class="intro-overlay" id="intro-overlay" aria-hidden="true">
+    <div class="intro-word" id="intro-word"></div>
+  </div>
+
+  <!-- No background/border — floats transparently rather than sitting
+       in its own distinct bar. No name/logo on the left either —
+       "Glenn Hui" already shows up elsewhere (this page's own heading,
+       the footer copyright line, the browser tab title). -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-right">
+        <div class="nav-links">
+          <a href="index.html" data-work-label>WORK</a>
+          <a href="about.html" class="active">ABOUT</a>
+        </div>
+        <a href="#" data-contact-link class="nav-contact">CONTACT</a>
+        <a href="#" data-instagram-link target="_blank" rel="noopener" aria-label="Instagram" class="ig-link">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" />
+            <circle cx="12" cy="12" r="4.6" />
+            <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+          </svg>
+        </a>
+      </div>
+      <!-- Only shown on narrow screens (see styles.css) — opens the
+           .nav-menu panel below with WORK / ABOUT / Instagram, since
+           there isn't room for all of that plus the animated name in
+           the bar itself on a phone. -->
+      <button type="button" class="nav-burger" id="nav-burger" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav-menu" id="nav-menu">
+      <a href="index.html" data-work-label>WORK</a>
+      <a href="about.html" class="active">ABOUT</a>
+      <a href="#" data-contact-link>CONTACT</a>
+      <a href="#" data-instagram-link target="_blank" rel="noopener">INSTAGRAM</a>
+    </div>
+  </nav>
+
+  <main class="about-wrap">
+    <div class="about-main">
+      <div class="about-text">
+        <h1 class="about-heading sr-only" id="about-heading"></h1>
+        <p class="about-meta" id="about-role"></p>
+        <p class="about-bio" id="about-bio"></p>
+
+        <p class="about-meta">
+          <a href="#" id="about-email"></a><br />
+          <a href="#" id="about-instagram" target="_blank" rel="noopener">Instagram</a>
+        </p>
+      </div>
+      <!-- A real photo (see SITE_CONFIG.photo in config.js) shows here as
+           an actual image; until one's set, script.js shows the grey
+           placeholder box below instead, so there's a reserved spot for
+           it rather than the page just not mentioning a photo at all. -->
+      <div class="about-photo-box" id="about-photo-box">
+        <img class="about-photo" id="about-photo" alt="" />
+        <span class="about-photo-placeholder" id="about-photo-placeholder"></span>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer" id="footer">
+    <div class="footer-inner">
+      <!-- Plain static text, no hover/canvas effect — see the
+           .footer-tagline comment in styles.css for why. -->
+      <p class="footer-tagline" data-footer-text></p>
+      <div class="footer-row">
+        <a href="#" data-instagram-link target="_blank" rel="noopener" class="footer-cta">Instagram</a>
+        <a href="#" data-email-link class="footer-cta">Email</a>
+      </div>
+      <div class="footer-copyright" data-copyright></div>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="works-data.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js" defer></script>
+  <script src="opener.js" defer></script>
+  <script src="script.js"></script>
+  <script src="intro.js"></script>
+  <!-- Diagnostic only — see font-audit.js. Does nothing at all unless
+       this page is visited with ?fontaudit in the URL. Safe to ignore,
+       safe to delete once the font question it was built for is
+       settled. -->
+  <script src="font-audit.js"></script>
+</body>
+</html>
