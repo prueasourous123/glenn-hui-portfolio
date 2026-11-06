@@ -346,24 +346,26 @@ function attachPreview(tile, video, start) {
   }
 
   if ("IntersectionObserver" in window) {
-    // rootMargin grows the trigger zone well past the actual viewport
-    // edges (500px above and below) — without this, a tile only started
-    // loading/playing the instant it was 40% visible, which on a phone
-    // (fast flick-scrolling, a fresh fetch for each short clip) read as
-    // a beat of "still just the static thumbnail" every time a new tile
-    // arrived rather than feeling instant. Now playback (and therefore
-    // buffering — these are muted+playsinline, so iOS allows the
-    // programmatic .play() below to start fetching data without
-    // needing an actual tap) kicks off while the tile is still well
-    // below the fold, so by the time it's actually scrolled into view
-    // the clip's usually already loaded and looping. threshold: 0
-    // (rather than the old 0.4) just means "fire the moment any part of
-    // the tile enters that expanded zone," which is what actually gives
-    // it that head start — a higher threshold would just shrink the
-    // effective margin back down. This zone is intentionally generous
-    // about *wanting* several tiles to start — MAX_CONCURRENT_PREVIEWS
-    // above is what actually keeps the number of videos decoding at once
-    // safe on a phone, regardless of how many tiles are in this zone.
+    // rootMargin grows the trigger zone a little past the actual viewport
+    // edges (150px above and below) — without this, a tile only started
+    // loading/playing the instant it was 40% visible, which read as a
+    // beat of "still just the static thumbnail" every time a new tile
+    // arrived. A small head start smooths that out. threshold: 0 (rather
+    // than the old 0.4) means "fire the moment any part of the tile
+    // enters that zone."
+    //
+    // This used to be 500px, which caused a real bug: a tile counts as
+    // "in view" for as long as it's anywhere in this zone, so with a
+    // margin that wide each tile stayed "in view" — and holding one of
+    // the MAX_CONCURRENT_PREVIEWS slots above — across a huge scroll
+    // range. In practice the first 3 tiles grabbed the only slots and
+    // didn't let go for ages, so everything else just sat on its static
+    // thumbnail while scrolling — looked like previews had stopped
+    // working. Keeping this margin small means a tile's slot frees up
+    // again soon after it's actually scrolled past, so the queue keeps
+    // moving. MAX_CONCURRENT_PREVIEWS above stays as a safety net for
+    // the (now much rarer) case of several tiles genuinely overlapping
+    // the viewport at once.
     const observer = new IntersectionObserver(
       ([entry]) => {
         const wasInView = inView;
@@ -371,7 +373,7 @@ function attachPreview(tile, video, start) {
         if (inView && !wasInView) resetToLoopStart();
         sync();
       },
-      { threshold: 0, rootMargin: "500px 0px" }
+      { threshold: 0, rootMargin: "150px 0px" }
     );
     observer.observe(tile);
   }
