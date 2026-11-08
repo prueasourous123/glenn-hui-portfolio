@@ -169,21 +169,22 @@ function buildTile(work, i) {
     : isLocalVideoFile(work.videoUrl)
       ? work.videoUrl
       : null;
-  // preload="none" here on purpose, even though fetching the real clip
-  // bytes ahead of time (rather than just "metadata") is genuinely what
-  // makes playback start instantly instead of stalling for a beat — see
-  // beginLoadingAndSync() in attachPreview(). Every preview starting that
-  // fetch the instant its tile is built was competing with the Spline 3D
-  // background for bandwidth right as the page opens, which is what was
-  // actually making videos feel slow to load. Leaving preload="none" here
-  // means nothing fetches yet; attachPreview() switches it to "auto" and
-  // calls video.load() itself, but only once the Spline scene has had the
-  // connection to itself for a moment. The MAX_CONCURRENT_PREVIEWS cap
-  // below is a separate thing — it limits concurrent *decoding* (the
-  // cause of the mobile corruption bug), not fetching.
+  // preload="auto" so the real clip bytes start fetching right away —
+  // waiting for anything else before that (an earlier version of this
+  // held every preview back until the Spline 3D background finished
+  // loading) just meant each video's own fetch time got added on *after*
+  // that wait, making them feel slower overall, not faster.
+  // fetchpriority="low" is the actual fix for the contention: it tells
+  // the browser these fetches matter less than whatever else is loading
+  // (Spline's own scene data), so Spline still gets first claim on
+  // bandwidth, but without forcing videos to sit idle until it's
+  // completely done. The
+  // MAX_CONCURRENT_PREVIEWS cap below is a separate thing — it limits
+  // concurrent *decoding* (the cause of the mobile corruption bug), not
+  // fetching.
   const preview =
     previewSrc && !prefersReducedMotion
-      ? `<video class="tile-preview-video" src="${escapeHtml(previewSrc)}" muted playsinline preload="none"></video>`
+      ? `<video class="tile-preview-video" src="${escapeHtml(previewSrc)}" muted playsinline preload="auto" fetchpriority="low"></video>`
       : "";
 
   tile.innerHTML = `
@@ -263,27 +264,6 @@ const MAX_CONCURRENT_PREVIEWS = 3;
 const activePreviewVideos = [];
 const waitingPreviews = []; // { video, activate } in request order
 
-// The Spline 3D background is the heaviest thing loading on this page,
-// and it was competing with every preview video for bandwidth right as
-// the page opens — which is what made the videos feel slow to load,
-// on top of the decoder-count problem the cap above already handles.
-// Holding every preview back (just sitting on its static thumbnail,
-// nothing fetching yet) until the Spline scene reports itself loaded
-// means the scene gets the connection to itself first, then the
-// videos load into a much less contested network. pendingPreviewSyncs
-// holds every attached tile's own sync() so markSplineReady() can give
-// them all a fair chance to start, in the order they were attached,
-// once that happens — see attachPreview() and the "load" listener on
-// <spline-viewer> near the bottom of this file.
-let splineReady = false;
-const pendingPreviewSyncs = [];
-
-function markSplineReady() {
-  if (splineReady) return;
-  splineReady = true;
-  pendingPreviewSyncs.forEach((sync) => sync());
-}
-
 function releasePreviewSlot(video) {
   const idx = activePreviewVideos.indexOf(video);
   if (idx !== -1) activePreviewVideos.splice(idx, 1);
@@ -349,7 +329,7 @@ function attachPreview(tile, video, start) {
     const wantsToPlay = inView || hovering;
     const isActive = activePreviewVideos.indexOf(video) !== -1;
 
-    if (wantsToPlay && splineReady) {
+    if (wantsToPlay) {
       if (isActive) return; // already playing, nothing to do
       dequeuePreview(video); // drop a stale queue entry before re-requesting
       if (activePreviewVideos.length < MAX_CONCURRENT_PREVIEWS) {
@@ -363,42 +343,12 @@ function attachPreview(tile, video, start) {
           activate();
         } });
       }
-    } else if (!wantsToPlay) {
+    } else {
       tile.classList.remove("preview-active");
       video.pause();
       dequeuePreview(video);
       if (isActive) releasePreviewSlot(video);
     }
-    // else: this tile wants to play but the Spline scene hasn't finished
-    // loading yet — leave it on its static thumbnail. markSplineReady()
-    // calls every attached tile's sync() again once it has, which is
-    // what actually lets it start.
-  }
-
-  // Nothing fetches until this runs — the markup below sets
-  // preload="none", so the browser hasn't pulled any clip bytes yet.
-  // Switching to "auto" and calling load() is what actually starts the
-  // fetch, which only happens once the Spline scene has had the
-  // connection to itself for a moment (see markSplineReady() above).
-  function beginLoadingAndSync() {
-    if (video.preload !== "auto") {
-      video.preload = "auto";
-      video.load();
-    }
-    sync();
-  }
-
-  // Lets markSplineReady() give this tile a fair chance once the Spline
-  // scene has loaded, even if it was already in view/hovered before
-  // that happened (sync() above would otherwise have nothing left to
-  // re-check it, since inView/hovering wouldn't change again on their
-  // own). If Spline somehow already reported ready by the time this
-  // tile attaches, just start right away rather than waiting on a
-  // markSplineReady() call that already happened.
-  if (splineReady) {
-    beginLoadingAndSync();
-  } else {
-    pendingPreviewSyncs.push(beginLoadingAndSync);
   }
 
   if (canHoverPreview) {
@@ -709,20 +659,4 @@ buildAbout();
 // between clicking and the player appearing.
 if (typeof WORKS !== "undefined" && WORKS.some((w) => getInstagramPermalink(w.videoUrl))) {
   loadInstagramEmbed();
-}
-
-// Only the homepage has a Spline scene (see .spline-bg in index.html) —
-// on About, or anywhere else without one, there's nothing to wait on, so
-// every preview just starts loading immediately.
-const splineViewerEl = document.querySelector(".spline-bg spline-viewer");
-if (splineViewerEl) {
-  splineViewerEl.addEventListener("load", markSplineReady, { once: true });
-  // Belt-and-suspenders: if the "load" event never fires for any reason
-  // (a network hiccup, a future version of the viewer that names the
-  // event differently, the scene failing outright), don't leave every
-  // preview video sitting on its thumbnail forever — let them start
-  // loading on their own after a few seconds either way.
-  setTimeout(markSplineReady, 4000);
-} else {
-  markSplineReady();
 }
