@@ -284,28 +284,11 @@ a {
   gap: 24px;
 }
 
-/* Balances WORK/ABOUT on the left — without it, the right side was
-   carrying only the small Instagram icon, which left the bar reading
-   lopsided (two labelled links on one side, one lone icon on the
-   other) and left a contact point for Glenn's work missing from the
-   nav entirely, buried in the About page and footer instead. Same
-   type treatment as .nav-links a, just without that one's
-   active-page underline — this isn't a page, it's an action. */
-.nav-contact {
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  color: var(--nav-fg);
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .nav-contact:hover {
-    opacity: 1;
-  }
-}
+/* The nav's CONTACT link (.nav-contact) was removed — the footer's
+   Email/Instagram buttons are the one "get in touch" moment on the
+   site now, and having it twice (nav + footer) felt redundant. This
+   rule block used to style that link; left as a comment rather than
+   silently gone in case a future edit wants it back. */
 
 .ig-link {
   display: inline-flex;
