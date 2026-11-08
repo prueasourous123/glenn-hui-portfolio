@@ -162,9 +162,21 @@ function buildTile(work, i) {
     : isLocalVideoFile(work.videoUrl)
       ? work.videoUrl
       : null;
+  // preload="auto" (not "metadata") — this just asks the browser to start
+  // fetching the actual clip bytes over the network ahead of time, which
+  // is cheap and doesn't touch the hardware video decoder (decoding only
+  // happens once playback actually starts). With "metadata" the browser
+  // only fetched duration/dimensions, so the real frame data had nothing
+  // to go on until .play() was called — which is what made playback feel
+  // like it stalled for a beat right as a tile came into view. The
+  // MAX_CONCURRENT_PREVIEWS cap below is what actually limits concurrent
+  // *decoding* (the thing that caused the mobile corruption bug), so
+  // letting several tiles' data buffer in the background ahead of their
+  // turn is safe — it just means playback can start instantly once a
+  // tile gets a slot, instead of fetching from a standing start.
   const preview =
     previewSrc && !prefersReducedMotion
-      ? `<video class="tile-preview-video" src="${escapeHtml(previewSrc)}" muted playsinline preload="metadata"></video>`
+      ? `<video class="tile-preview-video" src="${escapeHtml(previewSrc)}" muted playsinline preload="auto"></video>`
       : "";
 
   tile.innerHTML = `
