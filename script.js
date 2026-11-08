@@ -169,22 +169,22 @@ function buildTile(work, i) {
     : isLocalVideoFile(work.videoUrl)
       ? work.videoUrl
       : null;
-  // preload="auto" so the real clip bytes start fetching right away —
-  // waiting for anything else before that (an earlier version of this
-  // held every preview back until the Spline 3D background finished
-  // loading) just meant each video's own fetch time got added on *after*
-  // that wait, making them feel slower overall, not faster.
-  // fetchpriority="low" is the actual fix for the contention: it tells
-  // the browser these fetches matter less than whatever else is loading
-  // (Spline's own scene data), so Spline still gets first claim on
-  // bandwidth, but without forcing videos to sit idle until it's
-  // completely done. The
-  // MAX_CONCURRENT_PREVIEWS cap below is a separate thing — it limits
-  // concurrent *decoding* (the cause of the mobile corruption bug), not
-  // fetching.
+  // preload="none" — the real fetch only starts once a tile is actually
+  // about to be shown (in view or hovered), via beginLoading() in
+  // attachPreview(). This used to be "auto" here, which meant every
+  // single preview on the page — all of them, not just the ones near the
+  // fold — started downloading its full clip the instant the grid was
+  // built. That's ten-plus concurrent video fetches splitting one
+  // connection right as the page opens, which is what was actually
+  // making videos feel slow to load; it had nothing to do with Spline
+  // specifically. fetchpriority="low" stays on as a small extra nudge
+  // for whichever fetches do end up overlapping with Spline's own scene
+  // data. The MAX_CONCURRENT_PREVIEWS cap below is a separate thing — it
+  // limits concurrent *decoding* (the cause of the mobile corruption
+  // bug), not fetching.
   const preview =
     previewSrc && !prefersReducedMotion
-      ? `<video class="tile-preview-video" src="${escapeHtml(previewSrc)}" muted playsinline preload="auto" fetchpriority="low"></video>`
+      ? `<video class="tile-preview-video" src="${escapeHtml(previewSrc)}" muted playsinline preload="none" fetchpriority="low"></video>`
       : "";
 
   tile.innerHTML = `
@@ -289,6 +289,9 @@ function attachPreview(tile, video, start) {
   // (e.g. the mouse drifts off a tile that's still on screen).
   let inView = false;
   let hovering = false;
+  // Tracks whether this tile's own fetch has started yet — see
+  // beginLoading() below.
+  let startedLoading = false;
 
   video.addEventListener("loadedmetadata", () => {
     if (isFinite(video.duration)) {
@@ -325,11 +328,24 @@ function attachPreview(tile, video, start) {
     });
   }
 
+  // Kicks off this tile's actual network fetch — only once, and only
+  // once something has already decided it wants to play (in view or
+  // hovered). Markup ships with preload="none" so nothing happens before
+  // this runs; switching to "auto" and calling load() is what actually
+  // starts the browser pulling clip bytes.
+  function beginLoading() {
+    if (startedLoading) return;
+    startedLoading = true;
+    video.preload = "auto";
+    video.load();
+  }
+
   function sync() {
     const wantsToPlay = inView || hovering;
     const isActive = activePreviewVideos.indexOf(video) !== -1;
 
     if (wantsToPlay) {
+      beginLoading();
       if (isActive) return; // already playing, nothing to do
       dequeuePreview(video); // drop a stale queue entry before re-requesting
       if (activePreviewVideos.length < MAX_CONCURRENT_PREVIEWS) {
