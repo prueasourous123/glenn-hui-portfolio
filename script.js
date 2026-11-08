@@ -632,7 +632,16 @@ function escapeHtml(str) {
 // sitting on screen for a moment before the real name replaced it: a
 // slow CDN response was directly holding up a completely unrelated bit
 // of text.
-document.title = SITE_CONFIG.name ? `${SITE_CONFIG.name}` : document.title;
+// Each page's <title> is now written by hand in its own HTML (e.g.
+// "Glenn Hui — Hong Kong Videographer | Rugby & Sports Films" on the
+// homepage, "About — Glenn Hui, Hong Kong Videographer" on the About
+// page) rather than just "Glenn Hui" everywhere — that's what shows up
+// in a Google result and browser tab, so it's worth it being specific
+// per page for SEO rather than generic and identical on every page.
+// This used to overwrite that with a bare SITE_CONFIG.name on every
+// load, which quietly undid it — if SITE_CONFIG.name ever changes,
+// update the <title> in index.html/about.html by hand to match rather
+// than relying on this to keep them in sync.
 buildNav();
 buildMobileMenu();
 buildHero();
