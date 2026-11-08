@@ -134,8 +134,15 @@ function buildTile(work, i) {
   tile.style.backgroundColor = work.thumbColor || "#1a1a1a";
   tile.style.animationDelay = `${Math.min(i * 55, 440)}ms`;
 
+  // alt text describes the actual piece (title + category) rather than
+  // being left empty — these thumbnails are real content, not
+  // decoration, so a screen reader and image search both get something
+  // meaningful rather than nothing. Falls back to just the site name if
+  // a work has neither (shouldn't normally happen, but keeps this from
+  // ever rendering alt="").
+  const altText = [work.title, work.category].filter(Boolean).join(" — ") || "Glenn Hui";
   const img = work.thumbImage
-    ? `<img class="tile-img" src="${escapeHtml(work.thumbImage)}" alt="" loading="lazy" />`
+    ? `<img class="tile-img" src="${escapeHtml(work.thumbImage)}" alt="${escapeHtml(altText)}" loading="lazy" />`
     : "";
   // The grid tile itself only shows one combined line on hover (title
   // + category, e.g. "Chloe Chan · Athlete Profile") rather than the
