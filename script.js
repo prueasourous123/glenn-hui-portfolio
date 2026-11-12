@@ -169,21 +169,18 @@ function buildTile(work, i) {
     : isLocalVideoFile(work.videoUrl)
       ? work.videoUrl
       : null;
-  // preload="none" — nothing fetches from this markup alone. Every tile
-  // instead joins a small background preload queue (see
-  // MAX_CONCURRENT_PRELOADS/attachPreview() below) that fetches a couple
-  // of clips at a time, in order, so most of them are already loaded by
-  // the time someone scrolls to them — without every single preview on
-  // the page (ten-plus clips) all splitting one connection the instant
-  // the grid is built, which is what was actually making things feel
-  // slow/uneven before. fetchpriority="low" is what keeps the Spline
-  // background winning any real contention for bandwidth throughout.
-  // The MAX_CONCURRENT_PREVIEWS cap further down is a separate thing — it
-  // limits concurrent *decoding* (the cause of the mobile corruption
-  // bug), not fetching.
+  // preload="auto" — every preview starts fetching immediately and all
+  // together (a staggered background queue sat here for a while, fetching
+  // a couple of clips at a time, but Glenn wants everything loading
+  // together rather than trickling in). fetchpriority="low" is what
+  // actually protects the Spline background's own bandwidth share, so
+  // Spline still wins any real contention even with every video fetching
+  // at once. The MAX_CONCURRENT_PREVIEWS cap further down is a separate
+  // thing — it limits concurrent *decoding* (the cause of the mobile
+  // corruption bug), not fetching, so it stays regardless of this.
   const preview =
     previewSrc && !prefersReducedMotion
-      ? `<video class="tile-preview-video" src="${escapeHtml(previewSrc)}" muted playsinline preload="none" fetchpriority="low"></video>`
+      ? `<video class="tile-preview-video" src="${escapeHtml(previewSrc)}" muted playsinline preload="auto" fetchpriority="low"></video>`
       : "";
 
   tile.innerHTML = `
@@ -362,52 +359,6 @@ function dequeuePreview(video) {
   if (idx !== -1) waitingPreviews.splice(idx, 1);
 }
 
-// Background preload queue — fetches every tile's clip ahead of time, in
-// the order they appear on the page, a couple at a time. Two earlier
-// approaches both missed: starting every single preview's fetch at once
-// (eleven clips all splitting one connection — the actual cause of the
-// "odd speeds") was too much at once, and only starting a tile's fetch
-// once someone actually scrolled to it was too little too late (a
-// multi-second fetch starting right as a tile arrives reads as a stall,
-// not a preview). This keeps a small, steady trickle of fetches running
-// in the background the whole time someone's on the page, so most tiles
-// are already loaded by the time a visitor scrolls to them, while
-// fetchpriority="low" on every video tag (see buildTile()) is what
-// actually keeps the Spline background winning any real contention for
-// bandwidth — this queue just keeps that contention small and orderly
-// instead of all-at-once.
-const MAX_CONCURRENT_PRELOADS = 2;
-const preloadQueue = [];
-let activePreloads = 0;
-// A short head start for Spline's own first requests (its runtime +
-// scene file) before any preview fetch joins in at all — imperceptible
-// to a visitor, but means the very first bytes on the wire are Spline's,
-// not a photo-finish with ten video tags that happen to parse first.
-let preloadingUnlocked = false;
-setTimeout(() => {
-  preloadingUnlocked = true;
-  advancePreloadQueue();
-}, 250);
-
-function advancePreloadQueue() {
-  if (!preloadingUnlocked) return;
-  while (activePreloads < MAX_CONCURRENT_PRELOADS && preloadQueue.length) {
-    const next = preloadQueue.shift();
-    activePreloads++;
-    next();
-  }
-}
-
-function preloadSlotFreed() {
-  activePreloads = Math.max(0, activePreloads - 1);
-  advancePreloadQueue();
-}
-
-function dequeuePreload(entry) {
-  const idx = preloadQueue.indexOf(entry);
-  if (idx !== -1) preloadQueue.splice(idx, 1);
-}
-
 function attachPreview(tile, video, start) {
   // The loop window, clamped once we know the clip's real length — a
   // `previewStart` set close to the end of a short clip would otherwise
@@ -419,11 +370,6 @@ function attachPreview(tile, video, start) {
   // (e.g. the mouse drifts off a tile that's still on screen).
   let inView = false;
   let hovering = false;
-  // Tracks whether this tile's own fetch has started yet, and (while
-  // it's still waiting its turn) the queue entry representing it — see
-  // startFetchingNow()/runFromQueue() below.
-  let startedLoading = false;
-  let queueEntry = null;
 
   video.addEventListener("loadedmetadata", () => {
     if (isFinite(video.duration)) {
@@ -460,57 +406,11 @@ function attachPreview(tile, video, start) {
     });
   }
 
-  // Actually kicks off this tile's network fetch — only ever once.
-  // Markup ships with preload="none" so nothing happens before this
-  // runs; switching to "auto" and calling load() is what starts the
-  // browser pulling clip bytes.
-  function startFetchingNow() {
-    if (startedLoading) return;
-    startedLoading = true;
-    video.preload = "auto";
-    video.load();
-  }
-
-  // This tile's turn in the background preload queue. If sync() already
-  // force-started it in the meantime (someone scrolled to it ahead of
-  // its turn), just hand the slot straight back instead of loading
-  // twice or leaking a slot that never frees up.
-  function runFromQueue() {
-    queueEntry = null;
-    if (startedLoading) {
-      preloadSlotFreed();
-      return;
-    }
-    startFetchingNow();
-    const freeSlot = () => {
-      video.removeEventListener("canplaythrough", freeSlot);
-      clearTimeout(fallback);
-      preloadSlotFreed();
-    };
-    // "canplaythrough" (enough buffered to play without stalling) is the
-    // real signal; the timeout is a safety net so one slow clip on a bad
-    // connection can't hold up every tile behind it in the queue.
-    video.addEventListener("canplaythrough", freeSlot, { once: true });
-    const fallback = setTimeout(freeSlot, 4000);
-  }
-
-  queueEntry = runFromQueue;
-  preloadQueue.push(queueEntry);
-  advancePreloadQueue();
-
   function sync() {
     const wantsToPlay = inView || hovering;
     const isActive = activePreviewVideos.indexOf(video) !== -1;
 
     if (wantsToPlay) {
-      // Needed right now — jump the background queue rather than wait
-      // for its turn. Pull it out of the queue first so runFromQueue()
-      // doesn't later try to load it again or double-free a slot.
-      if (queueEntry) {
-        dequeuePreload(queueEntry);
-        queueEntry = null;
-      }
-      startFetchingNow();
       if (isActive) return; // already playing, nothing to do
       dequeuePreview(video); // drop a stale queue entry before re-requesting
       if (activePreviewVideos.length < MAX_CONCURRENT_PREVIEWS) {
