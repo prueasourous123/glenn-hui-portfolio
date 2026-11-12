@@ -19,7 +19,7 @@ function buildNav() {
   // buttons are the one "get in touch" moment on the site, and every
   // page has its own footer, so this works the same way everywhere.
   document.querySelectorAll("[data-contact-link]").forEach((el) => {
-    el.href = document.getElementById("footer") ? "#footer" : "index.html#footer";
+    el.href = document.getElementById("footer") ? "#footer" : "/#footer";
   });
 }
 
