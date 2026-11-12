@@ -122,15 +122,28 @@
 
 html {
   scroll-behavior: smooth;
-  /* Always reserves room for a vertical scrollbar, whether or not the
-     current page actually needs one. Without this, a short page (About,
-     mainly — see the body comment below) sits a few pixels wider than a
-     tall one (WORK's grid, which almost always scrolls) on any browser
-     where the scrollbar actually takes up width (most of Windows; some
-     Mac setups). Since the nav is centered within a max-width column at
-     wide viewports, that width difference shifted the whole nav — logo
-     included — sideways by a few pixels between the two pages. */
-  scrollbar-gutter: stable;
+}
+
+/* Reserves room for a vertical scrollbar, whether or not the current
+   page actually needs one, but only where a classic scrollbar can
+   actually take up layout width in the first place — a mouse-driven
+   setup (most of Windows; some Mac setups), gated by (hover: hover)
+   and (pointer: fine). Without this, a short page (About, mainly —
+   see the body comment below) sits a few pixels wider than a tall one
+   (WORK's grid, which almost always scrolls), and since the nav is
+   centered within a max-width column at wide viewports, that width
+   difference shifted the whole nav — logo included — sideways by a
+   few pixels between the two pages.
+   Touch devices (phones, tablets) report (pointer: coarse) and always
+   use overlay scrollbars that never take layout space, so applying
+   this there bought nothing and just reserved dead space on one side
+   of the viewport — the WORK grid's tiles sat flush to the left edge
+   with a gap only on the right, instead of centered, which is what
+   made the whole page look off-center on mobile. */
+@media (hover: hover) and (pointer: fine) {
+  html {
+    scrollbar-gutter: stable;
+  }
 }
 
 body {
