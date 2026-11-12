@@ -112,6 +112,11 @@
        above it (see .spline-bg in styles.css). -->
   <div class="spline-bg" aria-hidden="true">
     <spline-viewer></spline-viewer>
+    <!-- Fades to solid black as the page scrolls (see the scroll
+         listener in script.js) — sits as this box's own child, not a
+         separate layer, so it always exactly covers the scene under it
+         with no extra z-index bookkeeping. -->
+    <div class="spline-fade"></div>
   </div>
   <!-- Two separate Spline scenes, not one scene reshaped by CSS — a
        single 3D camera can't frame both a wide desktop window and a

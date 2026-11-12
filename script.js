@@ -229,6 +229,91 @@ function buildWorkGrid(container) {
   grid.className = "work-section-grid";
   WORKS.forEach((work, idx) => grid.appendChild(buildTile(work, idx)));
   container.appendChild(grid);
+
+  layoutWorkGrid(grid);
+  // Column width (and which breakpoint's --grid-columns/--grid-gap
+  // apply) changes with the window, so this needs rerunning on resize —
+  // debounced so dragging the window doesn't recompute on every pixel.
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => layoutWorkGrid(grid), 150);
+  });
+}
+
+// Positions every tile with plain math — a masonry pass, not a CSS
+// grid. A real CSS grid with grid-auto-flow: dense used to do this, but
+// "dense" just drops each tile into the first slot it fits; it never
+// looks ahead to keep things even, so a tall portrait tile next to a
+// short landscape one left the whole thing looking jagged ("the spacing
+// on the laptop version is a bit weirdly spaced"). This instead walks
+// the tiles in order and, for each one, finds whichever column (or pair
+// of adjacent columns, for a landscape tile, which is twice as wide) is
+// currently shortest, and places it there — so column heights stay
+// close to even throughout, without ever touching a tile's own aspect
+// ratio. Nothing gets cropped: checked the actual clips against their
+// boxes (1280x720 files in a 16:9 box, etc.) and they already match
+// exactly, so a uniform-grid approach would only crop real footage to
+// buy symmetry nobody asked for — this gets most of that evenness back
+// a different way.
+//
+// --grid-columns/--grid-gap come from computed style (see
+// .work-section-grid in styles.css) so every breakpoint's numbers still
+// live in one place, same as the old grid-template-columns/gap did.
+function layoutWorkGrid(grid) {
+  const tiles = Array.from(grid.children);
+  if (!tiles.length) return;
+
+  const computed = getComputedStyle(grid);
+  const columns = Math.max(1, parseInt(computed.getPropertyValue("--grid-columns"), 10) || 1);
+  const gap = parseFloat(computed.getPropertyValue("--grid-gap")) || 0;
+  const padLeft = parseFloat(computed.paddingLeft) || 0;
+  const padRight = parseFloat(computed.paddingRight) || 0;
+  const contentWidth = grid.clientWidth - padLeft - padRight;
+  if (contentWidth <= 0) return; // not laid out yet (e.g. display: none) — try again later
+
+  const colWidth = (contentWidth - gap * (columns - 1)) / columns;
+  const columnHeights = new Array(columns).fill(0);
+
+  tiles.forEach((tile) => {
+    const isLandscape = tile.dataset.orientation === "landscape";
+    // A landscape tile only gets the double-wide treatment when there's
+    // a second column to pair with — on a single mobile column it's
+    // just as wide as everything else, same as before.
+    const span = isLandscape && columns > 1 ? 2 : 1;
+    const width = colWidth * span + gap * (span - 1);
+    // Matches the aspect-ratio each orientation gets in styles.css —
+    // computed here (rather than measured back from the rendered tile)
+    // so placing every tile doesn't force a browser layout in between.
+    const height = isLandscape ? width * (9 / 16) : width * (16 / 9);
+
+    // The best slot for this tile: among every position it could start
+    // from, whichever single column (or, for a landscape tile, pair of
+    // adjacent columns) has the lowest *tallest* side right now.
+    let bestStart = 0;
+    let bestHeight = Infinity;
+    for (let start = 0; start <= columns - span; start++) {
+      const sideHeight = Math.max(...columnHeights.slice(start, start + span));
+      if (sideHeight < bestHeight) {
+        bestHeight = sideHeight;
+        bestStart = start;
+      }
+    }
+
+    tile.style.width = `${width}px`;
+    tile.style.left = `${bestStart * (colWidth + gap)}px`;
+    tile.style.top = `${bestHeight}px`;
+
+    const bottom = bestHeight + height + gap;
+    for (let i = bestStart; i < bestStart + span; i++) {
+      columnHeights[i] = bottom;
+    }
+  });
+
+  // Absolutely positioned tiles don't push the container's own height
+  // out, so without this the grid would collapse to nothing and
+  // whatever comes after it (the footer) would sit right on top of it.
+  grid.style.height = `${Math.max(...columnHeights) - gap}px`;
 }
 
 // Wires up the "glance" preview: a short muted loop of the clip starting
@@ -747,6 +832,42 @@ buildFooter();
 buildWorkGrid(document.getElementById("work-sections"));
 
 buildAbout();
+
+// Fades the Spline background to solid black as the page scrolls. On
+// mobile the scene never shows through the WORK grid at all (#work gets
+// a flat black background there — see styles.css) because gaps between
+// single-column tiles are so big and frequent it flickered; desktop
+// never got that treatment, so the scene stayed fully visible through
+// every gap in the grid all the way down the page ("I really need the
+// spline to... the videos to load before people scroll" — paired with
+// "could the hero slowly fade to black as you scroll down so it doesn't
+// show behind the videos"). An abrupt switch, like mobile's, would just
+// make the scene vanish rather than let it sink away, so this instead
+// ramps .spline-fade's opacity from 0 to 1 continuously across exactly
+// one viewport height of scrolling — about the same distance as
+// .hero-spacer — so it reads as the scene gradually going dark, and by
+// the time the first WORK tiles actually arrive it's already fully
+// black behind them. Only present on pages with a .spline-bg (index.html
+// — About has neither).
+const splineFade = document.querySelector(".spline-bg .spline-fade");
+if (splineFade) {
+  let fadeQueued = false;
+  function updateSplineFade() {
+    const progress = Math.min(1, Math.max(0, window.scrollY / window.innerHeight));
+    splineFade.style.opacity = progress;
+    fadeQueued = false;
+  }
+  updateSplineFade(); // correct immediately if the page loads already scrolled
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (fadeQueued) return;
+      fadeQueued = true;
+      requestAnimationFrame(updateSplineFade);
+    },
+    { passive: true }
+  );
+}
 
 // Warm up Instagram's embed script in the background as soon as the
 // page loads (instead of only starting the fetch the moment someone

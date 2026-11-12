@@ -25,10 +25,6 @@
      much brighter. */
   --accent: #8be04e;
   --accent-text: #8be04e;
-  /* A bit more breathing room than the original 14px — part of loosening
-     the grid's feel (see .tile's border-radius below) rather than
-     everything butted up edge to edge. */
-  --tile-gap: 48px;
   /* Taller than a typical nav bar on purpose — it has to hold the
      animated name (opener.js), which needs real room to be legible. */
   --nav-height: 136px;
@@ -494,6 +490,18 @@ a {
   height: 100%;
 }
 
+/* Starts fully transparent — script.js drives this element's opacity
+   directly as the page scrolls, ramping it to fully opaque black over
+   about one viewport height, so the scene reads as sinking into
+   darkness rather than just vanishing, and is already solid black by
+   the time the WORK grid's first tiles arrive. */
+.spline-fade {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+}
+
 /* No more mobile-specific sizing hacks here. Three rounds of CSS-only
    guesses (squeezing the box into 16:9, widening it past the
    viewport, a gentler aspect-ratio) never reliably fixed the mobile
@@ -596,55 +604,66 @@ a {
   }
 }
 
+/* A real CSS grid with grid-auto-flow: dense used to lay this out, but
+   "dense" just drops each tile into the next slot it fits — it never
+   looks ahead to balance things, so a tall portrait tile next to a
+   short landscape one left jagged, uneven rows. layoutWorkGrid() in
+   script.js replaces that with a JS masonry pass instead: every tile
+   still renders at its own true aspect ratio (nothing gets cropped —
+   checked the actual clips, the aspect-ratio boxes already match their
+   real dimensions exactly), but the layout picks whichever column (or
+   pair of columns, for a landscape tile) is currently shortest for each
+   tile in turn, so the columns stay close to even instead of drifting
+   apart. --grid-columns and --grid-gap are this container's only job
+   now — layoutWorkGrid() reads them straight from computed style, so
+   every breakpoint's numbers still live here in one place, same as the
+   old grid-template-columns/gap did. */
 .work-section-grid {
   max-width: 1600px;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-flow: dense;
-  /* Real, substantial room between tiles — not a positional trick,
-     actual layout space, which also means a taller page overall
-     ("space out the videos more... like a genuine further down the
-     page"). */
-  gap: var(--tile-gap);
+  position: relative;
+  --grid-columns: 4;
+  --grid-gap: 48px;
   padding: 8px 32px 64px;
 }
 
 @media (min-width: 720px) {
   .work-section-grid {
-    gap: 56px;
+    --grid-gap: 56px;
     padding: 8px 32px 72px;
   }
 }
 
 @media (min-width: 1240px) {
   .work-section-grid {
-    gap: 72px;
+    --grid-gap: 72px;
     padding: 8px 32px 80px;
   }
 }
 
 @media (max-width: 1100px) {
   .work-section-grid {
-    grid-template-columns: repeat(2, 1fr);
+    --grid-columns: 2;
   }
 }
 
 @media (max-width: 560px) {
   .work-section-grid {
-    grid-template-columns: 1fr;
-    gap: 28px;
+    --grid-columns: 1;
+    --grid-gap: 28px;
     padding: 8px 16px 48px;
   }
 }
 
 .tile {
-  position: relative;
-  grid-column: span 1;
+  /* Positioned by layoutWorkGrid() in script.js (left/top/width as
+     inline styles) rather than by grid-column — aspect-ratio below is
+     what turns that JS-set width into the right height automatically. */
+  position: absolute;
   aspect-ratio: 9 / 16;
   /* Back to sharp corners — the rounded version didn't land. The looser
-     --tile-gap above (from the same round) stays; just the corners
-     reverted. */
+     --grid-gap on .work-section-grid above (from the same round) stays;
+     just the corners reverted. */
   border-radius: 0;
   overflow: hidden;
   cursor: pointer;
@@ -663,7 +682,6 @@ a {
 }
 
 .tile[data-orientation="landscape"] {
-  grid-column: span 2;
   aspect-ratio: 16 / 9;
 }
 
@@ -676,13 +694,6 @@ a {
      be visible (3:1+), same reasoning as the text uses above. */
   outline: 2px solid var(--accent-text);
   outline-offset: 2px;
-}
-
-@media (max-width: 560px) {
-  .tile,
-  .tile[data-orientation="landscape"] {
-    grid-column: span 1;
-  }
 }
 
 @keyframes fadeUp {
