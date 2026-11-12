@@ -266,6 +266,8 @@ function layoutWorkGrid(grid) {
   const gap = parseFloat(computed.getPropertyValue("--grid-gap")) || 0;
   const padLeft = parseFloat(computed.paddingLeft) || 0;
   const padRight = parseFloat(computed.paddingRight) || 0;
+  const padTop = parseFloat(computed.paddingTop) || 0;
+  const padBottom = parseFloat(computed.paddingBottom) || 0;
   const contentWidth = grid.clientWidth - padLeft - padRight;
   if (contentWidth <= 0) return; // not laid out yet (e.g. display: none) — try again later
 
@@ -297,9 +299,18 @@ function layoutWorkGrid(grid) {
       }
     }
 
+    // left/top offsets on an absolutely positioned child are measured
+    // from the grid's *padding edge* — which sits outside the padding,
+    // not inside it — so the grid's own padding has no effect on where
+    // these land unless it's added back in by hand here. Leaving it out
+    // (as this did before) put every tile flush against the grid's
+    // outer edge regardless of --grid padding, with all the resulting
+    // slack bunched up on the right (and bottom) instead of split
+    // evenly — the grid itself looked correctly padded, but every tile
+    // inside it didn't.
     tile.style.width = `${width}px`;
-    tile.style.left = `${bestStart * (colWidth + gap)}px`;
-    tile.style.top = `${bestHeight}px`;
+    tile.style.left = `${padLeft + bestStart * (colWidth + gap)}px`;
+    tile.style.top = `${padTop + bestHeight}px`;
 
     const bottom = bestHeight + height + gap;
     for (let i = bestStart; i < bestStart + span; i++) {
@@ -310,7 +321,10 @@ function layoutWorkGrid(grid) {
   // Absolutely positioned tiles don't push the container's own height
   // out, so without this the grid would collapse to nothing and
   // whatever comes after it (the footer) would sit right on top of it.
-  grid.style.height = `${Math.max(...columnHeights) - gap}px`;
+  // padTop/padBottom here for the same reason as left/top above — the
+  // grid is box-sizing: border-box, so its own height needs to include
+  // both paddings, not just the tiles' own stacked height.
+  grid.style.height = `${padTop + Math.max(...columnHeights) - gap + padBottom}px`;
 }
 
 // Wires up the "glance" preview: a short muted loop of the clip starting
