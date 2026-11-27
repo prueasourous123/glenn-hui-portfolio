@@ -17,9 +17,6 @@ const SITE_CONFIG = {
   // "NAME") style heading.
   name: "Glenn Hui",
 
-  // One line under the intro on the About page
-  role: "Videographer, behind the lens of @mmt_studios",
-
   // His About page bio. Uses backticks (`) instead of quote marks so
   // actual line breaks (just press Enter) work here — each blank line
   // below becomes its own paragraph break on the page.

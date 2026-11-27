@@ -665,7 +665,6 @@ function getEmbedHtml(url) {
 function buildAbout() {
   const heading = document.getElementById("about-heading");
   const bio = document.getElementById("about-bio");
-  const role = document.getElementById("about-role");
   const email = document.getElementById("about-email");
   const ig = document.getElementById("about-instagram");
   const photo = document.getElementById("about-photo");
@@ -674,7 +673,6 @@ function buildAbout() {
   if (!heading && !bio) return;
 
   if (heading) heading.textContent = SITE_CONFIG.name;
-  if (role) role.textContent = SITE_CONFIG.role;
   if (bio) bio.textContent = SITE_CONFIG.bio;
   if (photo) {
     if (SITE_CONFIG.photo) {

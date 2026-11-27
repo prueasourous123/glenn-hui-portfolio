@@ -1227,15 +1227,6 @@ a {
   line-height: 2;
 }
 
-/* The role line ("Videographer, behind the lens of...") shares the
-   .about-meta class above with the email/Instagram line below it, but
-   needed its own font-size here to actually match the bio paragraph
-   above it (.about-bio, 15px). Scoped to the id, not .about-meta
-   itself, so the contact links keep their own smaller 13px. */
-#about-role {
-  font-size: 15px;
-}
-
 .about-meta a {
   /* The underline is the only thing marking these out as links now —
      same font and color as the rest of the page, just like the plain
