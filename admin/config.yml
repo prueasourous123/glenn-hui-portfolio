@@ -20,6 +20,73 @@ media_folder: photos
 public_folder: photos
 
 collections:
+  - name: pages
+    label: Site Text
+    # Another "file collection", same idea as Videos below — this one
+    # edits site-settings.json, which holds everything on the site
+    # that's just text/links rather than a video: Glenn's name and bio,
+    # contact info, and the footer line. Script.js reads this file the
+    # same way it reads works.json.
+    files:
+      - name: settings
+        label: Name, About & Footer
+        file: site-settings.json
+        fields:
+          - name: name
+            label: Name
+            widget: string
+            hint: "Shows in the browser tab, the About page heading, and the footer copyright line."
+
+          - name: bio
+            label: About Page Bio
+            widget: text
+            hint: "The About page's main text. Leave a blank line between paragraphs — each one becomes its own paragraph break on the page."
+
+          - name: photo
+            label: About Page Photo
+            widget: image
+            choose_url: true
+            required: false
+            hint: "Shown next to the bio on the About page. Leave blank to show a plain grey placeholder instead."
+
+          - name: email
+            label: Contact Email
+            widget: string
+            hint: "Shown on the About page and in the footer's Email button."
+
+          - name: instagramUrl
+            label: Instagram Link
+            widget: string
+            hint: "Full link to the Instagram profile, e.g. https://www.instagram.com/yourhandle"
+
+          - name: workLabel
+            label: Work Nav Label
+            widget: string
+            hint: "The word used for the work/portfolio nav link, e.g. \"WORK\", \"REELS\", \"FILMS\"."
+
+          - name: heroHeadline
+            label: Homepage Headline
+            widget: string
+            required: false
+            hint: "The big homepage headline. Not currently shown on the live site (that section's turned off for now), but safe to fill in for whenever it's switched back on. Keep it short."
+
+          - name: heroSubtext
+            label: Homepage Subtext
+            widget: text
+            required: false
+            hint: "A sentence or two under the headline. Same as above — not currently shown on the live site."
+
+          - name: heroButtonLabel
+            label: Homepage Button Text
+            widget: string
+            required: false
+            hint: "Text on the button under the homepage text. Same as above — not currently shown on the live site."
+
+          - name: footerText
+            label: Footer Line
+            widget: string
+            hint: "Shows at the bottom of every page, in the big footer. Keep it short, one line, e.g. \"Let's work together\"."
+
   - name: videos
     label: Videos
     # A "file collection": Glenn edits items inside one existing file

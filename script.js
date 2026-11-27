@@ -1,6 +1,6 @@
 /* ============================================================
    Site logic — you shouldn't need to edit this file.
-   Content lives in config.js and works.json (editable via /admin).
+   Content lives in site-settings.json and works.json (editable via /admin).
    ============================================================ */
 
 function buildNav() {
@@ -93,7 +93,7 @@ function buildFooter() {
       el.href = `mailto:${SITE_CONFIG.email}`;
       el.textContent = SITE_CONFIG.email;
     } else {
-      // No email set in config.js — don't show a dead/empty link.
+      // No email set — don't show a dead/empty link.
       el.remove();
     }
   });
@@ -744,10 +744,37 @@ function escapeHtml(str) {
 // load, which quietly undid it — if SITE_CONFIG.name ever changes,
 // update the <title> in index.html/about.html by hand to match rather
 // than relying on this to keep them in sync.
-buildNav();
 buildMobileMenu();
-buildHero();
-buildFooter();
+
+// SITE_CONFIG used to come from config.js, a hand-edited `const
+// SITE_CONFIG = {...}` file loaded via its own <script> tag before this
+// one. It's now site-settings.json — the exact same fields (name, bio,
+// contact info, hero text, footer text), just as plain JSON — so the
+// /admin page can edit them through a simple form, the same way
+// works.json replaced works-data.js below. Fetched here rather than
+// loaded via <script src>, so buildNav/buildHero/buildFooter/buildAbout
+// all wait on this one same-origin request first (in practice near
+// instant) instead of running before the real text has arrived.
+let SITE_CONFIG = {};
+fetch("site-settings.json")
+  .then((res) => res.json())
+  .then((data) => {
+    SITE_CONFIG = data && typeof data === "object" ? data : {};
+  })
+  .catch((err) => {
+    console.error("Couldn't load site-settings.json", err);
+  })
+  .finally(() => {
+    // Runs even if the fetch failed — SITE_CONFIG just stays `{}` and
+    // every build function already falls back to "" for a missing
+    // field (see buildHero/buildFooter/buildAbout above), so the page
+    // still renders, just without that text, rather than staying blank
+    // forever waiting on a request that never resolved.
+    buildNav();
+    buildHero();
+    buildFooter();
+    buildAbout();
+  });
 
 // WORKS used to come from works-data.js, a hand-edited JS file with a
 // `const WORKS = [...]` literal, loaded via a plain <script> tag. It's
@@ -783,8 +810,6 @@ fetch("works.json")
     // everything after it — just the work grid stays empty.
     console.error("Couldn't load works.json", err);
   });
-
-buildAbout();
 
 // Fades the Spline background to solid black as the page scrolls. On
 // mobile the scene never shows through the WORK grid at all (#work gets

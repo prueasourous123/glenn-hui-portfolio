@@ -6,7 +6,8 @@
   <title>Glenn Hui | About</title>
   <!-- See the matching comment in index.html — same idea, this page's
        own description/sharing preview. Keep this in sync with
-       config.js's bio/role if those change meaningfully. -->
+       site-settings.json's bio/role if those change meaningfully (or
+       update it through the /admin page instead). -->
   <meta
     name="description"
     content="About Glenn Hui, a Hong Kong-based videographer and editor who grew up in Sydney, creating video content behind @mmt_studios."
@@ -103,10 +104,11 @@
           <a href="#" id="about-instagram" target="_blank" rel="noopener">Instagram</a>
         </p>
       </div>
-      <!-- A real photo (see SITE_CONFIG.photo in config.js) shows here as
-           an actual image; until one's set, script.js shows the grey
-           placeholder box below instead, so there's a reserved spot for
-           it rather than the page just not mentioning a photo at all. -->
+      <!-- A real photo (the "photo" field in site-settings.json, set
+           through the /admin page) shows here as an actual image; until
+           one's set, script.js shows the grey placeholder box below
+           instead, so there's a reserved spot for it rather than the
+           page just not mentioning a photo at all. -->
       <div class="about-photo-box" id="about-photo-box">
         <img class="about-photo" id="about-photo" alt="" />
         <span class="about-photo-placeholder" id="about-photo-placeholder"></span>
@@ -127,7 +129,6 @@
     </div>
   </footer>
 
-  <script src="config.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js" defer></script>
   <script src="opener.js" defer></script>
   <script src="script.js"></script>
