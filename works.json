@@ -120,6 +120,17 @@
       "previewVideo": "videos/u20s-the-jersey-preview.mp4",
       "thumbColor": "#1c1c1c",
       "thumbImage": "thumbs/u20s-the-jersey.jpg"
+    },
+    {
+      "title": "video",
+      "category": "testing",
+      "duration": "",
+      "type": "film",
+      "orientation": "portrait",
+      "videoUrl": "https://www.youtube.com/watch?v=gigpsoj3U74",
+      "previewVideo": "",
+      "thumbColor": "",
+      "thumbImage": ""
     }
   ]
 }
