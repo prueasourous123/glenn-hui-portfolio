@@ -352,10 +352,18 @@ const canHoverPreview =
 // blocks, stale frames) while they fight over the same hardware decoder.
 // The wider rootMargin below means several tiles can want to play at once
 // while scrolling a single-column mobile grid, so this caps how many
-// previews are *actually* playing at a time — the rest just sit on their
-// static thumbnail until a slot frees up, rather than every in-range tile
-// calling .play() unconditionally.
-const MAX_CONCURRENT_PREVIEWS = 3;
+// previews are *actually* playing at a time on touch devices — the rest
+// just sit on their static thumbnail until a slot frees up, rather than
+// every in-range tile calling .play() unconditionally.
+//
+// That limit doesn't apply on a mouse/trackpad setup (canHoverPreview,
+// same check as above): the wide grid there (4 columns at desktop widths)
+// routinely puts 6-8+ tiles in view at once, and a real desktop/laptop
+// has no trouble decoding that many small muted loops at the same time —
+// capping it at the phone-safe number of 3 just meant most of a desktop
+// visitor's screen sat frozen on static thumbnails even though nothing
+// was actually overloaded. Uncapped there, every in-view tile just plays.
+const MAX_CONCURRENT_PREVIEWS = canHoverPreview ? Infinity : 3;
 const activePreviewVideos = [];
 const waitingPreviews = []; // { video, activate } in request order
 
