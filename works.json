@@ -122,15 +122,15 @@
       "thumbImage": "thumbs/u20s-the-jersey.jpg"
     },
     {
-      "title": "testing",
-      "category": "documentry",
-      "duration": "",
-      "type": "film",
+      "title": "The Jersey",
+      "category": "Hong Kong China Rugby U20s",
+      "duration": "1:11",
+      "type": "short",
       "orientation": "landscape",
-      "videoUrl": "https://www.youtube.com/watch?v=cDEIBfM09VQ",
-      "previewVideo": "",
-      "thumbColor": "",
-      "thumbImage": ""
+      "videoUrl": "videos/u20s-the-jersey.mp4",
+      "previewVideo": "videos/u20s-the-jersey-preview.mp4",
+      "thumbColor": "#1c1c1c",
+      "thumbImage": "thumbs/u20s-the-jersey.jpg"
     }
   ]
 }
