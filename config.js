@@ -20,15 +20,18 @@ const SITE_CONFIG = {
   // One line under the intro on the About page
   role: "Videographer, behind the lens of @mmt_studios",
 
-  // A couple of sentences about him. Keep it short. Uses backticks (`)
-  // instead of quote marks so an actual line break (just press Enter)
-  // works here — the sign-off below is its own line because of that,
-  // not a separate field. Delete that last line (and the blank line
-  // above it) if a plain sign-off isn't wanted, or swap "Glenn" for
-  // anything else.
-  bio: `I'm from Hong Kong, grew up in Sydney. Rugby's been part of my life for as long as I can remember, and I've been creating content for years now. I just love being behind the camera, creating.
+  // His About page bio. Uses backticks (`) instead of quote marks so
+  // actual line breaks (just press Enter) work here — each blank line
+  // below becomes its own paragraph break on the page.
+  bio: `I believe there is always a story to be told, it's just a matter of knowing where to point the lens.
 
-Glenn`,
+I'm Glenn Hui, a Hong Kong-based creative producer and filmmaker. Over the last few years, my camera has taken me everywhere from the sidelines of international rugby tournaments and high-intensity gyms to editorial sets with cultural icons and lifestyle brands like Prestige and Lifestyle Asia.
+
+For me, great production isn't just about sharp visuals or clean edits; it's about rhythm, emotion, and clarity. I focus on crafting videos that don't just look good, but actually connect with the people watching them. Whether it's a quick-turnaround social reel or a multi-part brand documentary, I love taking a project from a blank page all the way to the final color grade.
+
+When I'm not behind a camera or cutting timelines in DaVinci Resolve, you'll usually find me on the rugby pitch. Having represented Hong Kong China, I know firsthand what real-world grit and resilience look like, and that's the exact energy I try to bring into every frame I shoot.
+
+Got a project in mind? Get in touch and let's work together.`,
 
   // A photo for the About page, shown to the right of the text. A file
   // path like "photos/glenn.jpg" pointing at an image saved in the
