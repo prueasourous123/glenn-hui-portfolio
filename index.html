@@ -11,7 +11,7 @@
        when the link is shared or indexed. Deliberately kept broad
        (videographer/editor, not a list of specific genres like "rugby
        and sports films") so this doesn't box Glenn into one category —
-       the work itself, via works-data.js, is what actually shows the
+       the work itself, via works.json, is what actually shows the
        range. If this wording changes, update description and
        og:description together so they keep matching — search engines
        penalize a description that doesn't match the page. Keep it under
@@ -216,11 +216,11 @@
     </section>
     -->
 
-    <!-- A single, unorganized grid of every piece in works-data.js,
+    <!-- A single, unorganized grid of every piece in works.json,
          built by buildWorkGrid() in script.js — deliberately flat, not
          split into categories or a highlighted piece, so Glenn can just
-         add a new entry to works-data.js and it shows up with no extra
-         decision to make about where it belongs or how it's framed.
+         add a new entry through the /admin page and it shows up with no
+         extra decision to make about where it belongs or how it's framed.
          id="work" is what the hero's "See the work" button scrolls to. -->
     <div id="work">
       <div id="work-sections"></div>
@@ -247,7 +247,6 @@
   </footer>
 
   <script src="config.js"></script>
-  <script src="works-data.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js" defer></script>
   <script src="opener.js" defer></script>
   <script src="script.js"></script>

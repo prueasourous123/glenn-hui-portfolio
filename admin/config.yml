@@ -1,0 +1,102 @@
+# ============================================================
+# ADMIN PAGE SETTINGS — powers the form at glennhui.com/admin
+# ------------------------------------------------------------
+# This is what makes it possible for Glenn to add/edit his own
+# videos without touching code. Don't edit this file unless
+# you're changing what the admin form itself looks like.
+# ============================================================
+
+backend:
+  name: github
+  repo: prueasourous123/glenn-hui-portfolio
+  branch: main
+  # Points logins at the small, free, self-hosted login helper (a
+  # Cloudflare Worker) instead of Netlify, which this site doesn't use.
+  base_url: https://sveltia-cms-auth.pruesteadson.workers.dev
+
+# Where an uploaded file lands by default if a field below doesn't say
+# otherwise, and the matching path the live site would use to show it.
+media_folder: photos
+public_folder: photos
+
+collections:
+  - name: videos
+    label: Videos
+    # A "file collection": Glenn edits items inside one existing file
+    # (works.json) rather than creating loose new files — matches how
+    # the site already reads its video list.
+    files:
+      - name: works
+        label: Video List
+        file: works.json
+        fields:
+          - name: items
+            label: Videos
+            widget: list
+            # Shows each video's title in the collapsed list view, so
+            # Glenn can see which is which without opening every one.
+            summary: "{{fields.title}}"
+            fields:
+              - name: title
+                label: Title
+                widget: string
+                hint: "Shown on the tile, e.g. \"Nike Ad\"."
+
+              - name: category
+                label: Category
+                widget: string
+                hint: "Small label under the title, e.g. \"Branded\", \"Documentary\", or a series/competition name. Keep it short."
+
+              - name: duration
+                label: Duration
+                widget: string
+                required: false
+                hint: "The clip's length, e.g. 0:26. Leave blank if unsure, it's optional."
+
+              - name: type
+                label: Type
+                widget: select
+                options:
+                  - { label: Short, value: short }
+                  - { label: Film, value: film }
+                hint: "Controls the SHORTS/FILMS distinction and whether it gets a small \"FILM\" badge."
+
+              - name: orientation
+                label: Orientation
+                widget: select
+                options:
+                  - { label: Portrait (tall), value: portrait }
+                  - { label: Landscape (wide), value: landscape }
+                hint: "Portrait clips show as tall tiles. Landscape clips show twice as wide."
+
+              - name: videoUrl
+                label: Video
+                widget: file
+                choose_url: true
+                media_folder: videos
+                public_folder: videos
+                hint: "Upload a video file, or click \"Insert from URL\" and paste a Vimeo, YouTube, or Instagram Reel link instead. Portrait videos work best for this site."
+
+              - name: previewVideo
+                label: Ambient Preview Clip
+                widget: file
+                choose_url: true
+                required: false
+                media_folder: videos
+                public_folder: videos
+                hint: "A short (few-second), separate, trimmed-down clip used for the silent auto-playing preview on the grid. Keeping this small is what keeps the site fast — without it, the full video above gets streamed on loop instead. Required if the video above is a Vimeo/YouTube/Instagram link, since the grid can't pull a preview out of those automatically."
+
+              - name: thumbColor
+                label: Tile Background Color
+                widget: string
+                required: false
+                hint: "A hex color code, e.g. #1c1c1c. Shown behind the cover photo while it loads, or on its own if there isn't one. Leave as-is if unsure."
+
+              - name: thumbImage
+                label: Cover Photo
+                widget: image
+                choose_url: true
+                required: false
+                media_folder: thumbs
+                public_folder: thumbs
+                hint: "A cover photo shown on the grid tile itself. Upload a still from the video, or paste an image link (e.g. a YouTube thumbnail URL). Leave blank to just show the background color instead."

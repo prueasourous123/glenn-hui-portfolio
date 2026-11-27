@@ -1,0 +1,125 @@
+{
+  "items": [
+    {
+      "title": "加油",
+      "category": "Hong Kong China Rugby",
+      "duration": "0:26",
+      "type": "short",
+      "orientation": "landscape",
+      "videoUrl": "videos/jia-you.mp4",
+      "previewVideo": "videos/jia-you-preview.mp4",
+      "thumbColor": "#1c1c1c",
+      "thumbImage": "thumbs/jia-you.jpg"
+    },
+    {
+      "title": "Home Soil",
+      "category": "Documentary",
+      "duration": "",
+      "type": "film",
+      "orientation": "landscape",
+      "videoUrl": "https://www.youtube.com/watch?v=Uqm7miilfEU",
+      "previewVideo": "videos/home-soil-preview.mp4",
+      "thumbColor": "#141414",
+      "thumbImage": "https://img.youtube.com/vi/Uqm7miilfEU/maxresdefault.jpg"
+    },
+    {
+      "title": "Men's Victory",
+      "category": "Hong Kong China Rugby Sevens",
+      "duration": "0:18",
+      "type": "short",
+      "orientation": "portrait",
+      "videoUrl": "videos/mens-victory.mp4",
+      "previewVideo": "videos/mens-victory-preview.mp4",
+      "thumbColor": "#1c1c1c",
+      "thumbImage": "thumbs/mens-victory.jpg"
+    },
+    {
+      "title": "Brand New Day",
+      "category": "Hong Kong China Rugby Sevens",
+      "duration": "0:32",
+      "type": "short",
+      "orientation": "landscape",
+      "videoUrl": "videos/brand-new-day.mp4",
+      "previewVideo": "videos/brand-new-day-preview.mp4",
+      "thumbColor": "#1c1c1c",
+      "thumbImage": "thumbs/brand-new-day.jpg"
+    },
+    {
+      "title": "Two Sides",
+      "category": "World Rugby",
+      "duration": "0:44",
+      "type": "short",
+      "orientation": "portrait",
+      "videoUrl": "videos/two-sides.mp4",
+      "previewVideo": "videos/two-sides-preview.mp4",
+      "thumbColor": "#1c1c1c",
+      "thumbImage": "thumbs/two-sides.jpg"
+    },
+    {
+      "title": "Chloe Chan",
+      "category": "Athlete Profile",
+      "duration": "",
+      "type": "film",
+      "orientation": "landscape",
+      "videoUrl": "https://www.youtube.com/watch?v=iLvCqG-6wI8",
+      "previewVideo": "videos/chloe-chan-preview.mp4",
+      "thumbColor": "#1a1a1a",
+      "thumbImage": "https://img.youtube.com/vi/iLvCqG-6wI8/maxresdefault.jpg"
+    },
+    {
+      "title": "Full Time HK v SAM",
+      "category": "Hong Kong China Rugby WXV",
+      "duration": "0:40",
+      "type": "short",
+      "orientation": "portrait",
+      "videoUrl": "videos/wxv-full-time.mp4",
+      "previewVideo": "videos/wxv-full-time-preview.mp4",
+      "thumbColor": "#1c1c1c",
+      "thumbImage": "thumbs/wxv-full-time.jpg"
+    },
+    {
+      "title": "Message to HK",
+      "category": "Recovery Hub",
+      "duration": "0:19",
+      "type": "short",
+      "orientation": "portrait",
+      "videoUrl": "videos/recovery-hub.mp4",
+      "previewVideo": "videos/recovery-hub-preview.mp4",
+      "thumbColor": "#1c1c1c",
+      "thumbImage": "thumbs/recovery-hub.jpg"
+    },
+    {
+      "title": "Max Denmark",
+      "category": "Athlete Profile",
+      "duration": "",
+      "type": "film",
+      "orientation": "landscape",
+      "videoUrl": "https://www.youtube.com/watch?v=-Yb69_bVQ9w",
+      "previewVideo": "videos/max-denmark-preview.mp4",
+      "thumbColor": "#1a1a1a",
+      "thumbImage": "https://img.youtube.com/vi/-Yb69_bVQ9w/maxresdefault.jpg"
+    },
+    {
+      "title": "Highlight Reel",
+      "category": "International Fencing Federation",
+      "duration": "0:26",
+      "type": "short",
+      "orientation": "portrait",
+      "videoUrl": "videos/fie-highlight-reel.mp4",
+      "previewVideo": "videos/fie-highlight-reel-preview.mp4",
+      "thumbColor": "#1c1c1c",
+      "thumbImage": "thumbs/fie-highlight-reel.jpg"
+    },
+    {
+      "title": "The Jersey",
+      "category": "Hong Kong China Rugby U20s",
+      "duration": "1:11",
+      "type": "short",
+      "orientation": "landscape",
+      "videoUrl": "videos/u20s-the-jersey.mp4",
+      "previewVideo": "videos/u20s-the-jersey-preview.mp4",
+      "thumbColor": "#1c1c1c",
+      "thumbImage": "thumbs/u20s-the-jersey.jpg"
+    }
+  ]
+}

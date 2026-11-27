@@ -1,6 +1,7 @@
 /* ============================================================
    Styling only — no content lives in this file.
-   To change text, edit config.js and works-data.js instead.
+   To change text, edit config.js, or add/edit videos through the
+   /admin page — see works.json's own note for details.
    ============================================================ */
 
 :root {
@@ -588,8 +589,9 @@ a {
 
 /* A single, unorganized grid of every piece — deliberately flat, not
    split into categories or a highlighted piece, so Glenn can add a new
-   block to works-data.js whenever he likes without having to decide
-   which group it belongs in or whether it deserves special billing. */
+   project through the /admin page whenever he likes without having to
+   decide which group it belongs in or whether it deserves special
+   billing. */
 /* Deliberately NOT given a background of its own — #work used to be
    opaque so it would fully cover the fixed .spline-bg scene as it
    scrolled up over it, but that was exactly backwards from what was

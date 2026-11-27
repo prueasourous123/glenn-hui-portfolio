@@ -1,6 +1,6 @@
 /* ============================================================
    Site logic — you shouldn't need to edit this file.
-   Content lives in config.js and works-data.js.
+   Content lives in config.js and works.json (editable via /admin).
    ============================================================ */
 
 function buildNav() {
@@ -158,7 +158,7 @@ function buildTile(work, i) {
   // quietly streaming full-size source video to every visitor the
   // moment each tile scrolls into view (this is what was burning through
   // Netlify's bandwidth credits — see the -preview.mp4 files alongside
-  // each self-hosted short in works-data.js, not just the three
+  // each self-hosted short in works.json, not just the three
   // YouTube-embedded films that already worked this way). Falls back to
   // `videoUrl` itself only for a local file with no dedicated preview
   // clip of its own. Either way, clicking the tile always opens the
@@ -211,14 +211,14 @@ function buildTile(work, i) {
   return tile;
 }
 
-// Builds a single, unorganized grid of every piece in works-data.js (in
-// the order they're listed there — see that file's own note on
-// reordering). Deliberately not split into categories/sections, and
-// nothing pulled out as a separate "featured" piece above it — Glenn
-// adds his own videos to works-data.js from time to time, and a flat
+// Builds a single, unorganized grid of every piece in works.json (in
+// the order they're listed there — reordering happens through /admin
+// now). Deliberately not split into categories/sections, and nothing
+// pulled out as a separate "featured" piece above it — Glenn adds his
+// own videos through the /admin page from time to time, and a flat
 // list means he never has to make a judgment call about which group a
 // new piece belongs in, or whether it deserves special billing, just
-// add the block and it shows up.
+// publish it and it shows up.
 function buildWorkGrid(container) {
   if (!container || typeof WORKS === "undefined" || WORKS.length === 0) return;
 
@@ -565,7 +565,7 @@ function openLightbox(work) {
     const embed = getEmbedHtml(work.videoUrl);
     frame.innerHTML = embed
       ? embed
-      : `<div class="lightbox-empty">No video link added yet.<br>Add a Vimeo, YouTube, or Instagram Reel link for this entry in works-data.js.</div>`;
+      : `<div class="lightbox-empty">No video link added yet.<br>Add a Vimeo, YouTube, or Instagram Reel link for this entry in the admin page.</div>`;
     if (igPermalink && embed) {
       showSpinnerUntilEmbedReady(frame);
       loadInstagramEmbed();
@@ -749,7 +749,40 @@ buildMobileMenu();
 buildHero();
 buildFooter();
 
-buildWorkGrid(document.getElementById("work-sections"));
+// WORKS used to come from works-data.js, a hand-edited JS file with a
+// `const WORKS = [...]` literal, loaded via a plain <script> tag. It's
+// now works.json — the exact same data, just as plain JSON instead of
+// JS syntax — so the /admin page (see that folder) can edit entries
+// through a simple form instead of Glenn needing to open and understand
+// a JavaScript file. Fetched here rather than loaded via <script src>,
+// which means this one thing waits on a network request instead of
+// parsing synchronously — in practice instant, since it's a same-origin
+// file right next to script.js, not a request to anywhere else.
+// works.json's content is `{ "items": [...] }` rather than a bare
+// array — the /admin page's CMS needs every field it manages to hang
+// off a named key in the file, so the list of videos lives under
+// "items" instead of being the file's whole top-level content.
+let WORKS = [];
+fetch("works.json")
+  .then((res) => res.json())
+  .then((data) => {
+    WORKS = Array.isArray(data && data.items) ? data.items : [];
+    buildWorkGrid(document.getElementById("work-sections"));
+    // Warm up Instagram's embed script in the background as soon as the
+    // page loads (instead of only starting the fetch the moment someone
+    // clicks a tile) — by the time a visitor actually opens a video, the
+    // script is usually already loaded, so there's less of a delay
+    // between clicking and the player appearing.
+    if (WORKS.some((w) => getInstagramPermalink(w.videoUrl))) {
+      loadInstagramEmbed();
+    }
+  })
+  .catch((err) => {
+    // Leaves the page otherwise fully usable (nav/hero/footer/about all
+    // already rendered above) rather than throwing and breaking
+    // everything after it — just the work grid stays empty.
+    console.error("Couldn't load works.json", err);
+  });
 
 buildAbout();
 
@@ -787,13 +820,4 @@ if (splineFade) {
     },
     { passive: true }
   );
-}
-
-// Warm up Instagram's embed script in the background as soon as the
-// page loads (instead of only starting the fetch the moment someone
-// clicks a tile) — by the time a visitor actually opens a video, the
-// script is usually already loaded, so there's less of a delay
-// between clicking and the player appearing.
-if (typeof WORKS !== "undefined" && WORKS.some((w) => getInstagramPermalink(w.videoUrl))) {
-  loadInstagramEmbed();
 }
